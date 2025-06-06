@@ -6,8 +6,6 @@ import numpy as np
 import pandas as pd
 import sciris as sc
 import hpvsim as hpv
-import pars_data as dp
-import interventions as hpi
 
 
 def get_vx_intvs(
@@ -38,7 +36,8 @@ def get_vx_intvs(
 
 
 def get_screen_intvs(
-    primary=None, triage=None, screen_coverage=0.7, ltfu=0.3, start_year=2025
+    primary=None, triage=None, screen_coverage=0.7, ltfu=0.3, start_year=2025,
+    age_range=(30, 50), paired_px=False
 ):
     """
     Make interventions for screening scenarios
@@ -65,110 +64,185 @@ def get_screen_intvs(
     tx_assigner = make_tx_assigner()
     ablation = make_tx(prod_name="ablation")
     excision = make_tx(prod_name="excision")
-
-    age_range = [30, 50]
-    len_age_range = (age_range[1] - age_range[0]) / 2
-
-    model_annual_screen_prob = 1 - (1 - screen_coverage) ** (1 / len_age_range)
-
-    # Routine screening
-    screen_eligible = lambda sim: np.isnan(sim.people.date_screened) | (
-        sim.t > (sim.people.date_screened + 10 / sim["dt"])
-    )
-    screening = hpv.routine_screening(
-        product=primary_test,
-        prob=model_annual_screen_prob,
-        eligibility=screen_eligible,
-        age_range=[30, 50],
-        start_year=start_year,
-        label="screening",
-    )
-
-    if triage is not None:
-        # Triage screening
+    
+    if paired_px:
+        # doing HPV FASTER
+        vx_eligible = lambda sim: np.isnan(sim.people.date_vaccinated)
+        catchup_vx = hpv.campaign_vx(
+            eligibility=vx_eligible,
+            prob=screen_coverage,
+            years=start_year,
+            product='nonavalent',
+            age_range=age_range,
+            label="HPV FASTER vx",
+        )
+        screen_eligible = lambda sim: (
+            sim.t == sim.people.date_vaccinated
+        )
+        screening = hpv.routine_screening(
+            product=primary_test,
+            prob=1.0,
+            eligibility=screen_eligible,
+            age_range=age_range,
+            start_year=start_year,
+            label="screening",
+        )
+                # Assign treatment
         screen_positive = lambda sim: sim.get_intervention("screening").outcomes[
             "positive"
         ]
         triage_screening = hpv.routine_triage(
             start_year=start_year,
+            prob=1.0,
+            annual_prob=False,
+            product=tx_assigner,
+            eligibility=screen_positive,
+            label="tx assigner",
+        )
+
+        ablation_eligible = lambda sim: sim.get_intervention("tx assigner").outcomes[
+            "ablation"
+        ]
+        ablation = hpv.treat_num(
             prob=1 - ltfu,
             annual_prob=False,
-            product=triage_test,
-            eligibility=screen_positive,
-            label="triage",
+            product=ablation,
+            eligibility=ablation_eligible,
+            label="ablation",
         )
-        triage_positive = lambda sim: sim.get_intervention("triage").outcomes[
-            "positive"
-        ]
-        assign_treatment = hpv.routine_triage(
-            start_year=start_year,
-            prob=1.0,
+
+        excision_eligible = lambda sim: list(
+            set(
+                sim.get_intervention("tx assigner").outcomes["excision"].tolist()
+                + sim.get_intervention("ablation").outcomes["unsuccessful"].tolist()
+            )
+        )
+        excision = hpv.treat_num(
+            prob=1 - ltfu,
             annual_prob=False,
-            product=tx_assigner,
-            eligibility=triage_positive,
-            label="tx assigner",
+            product=excision,
+            eligibility=excision_eligible,
+            label="excision",
         )
-    else:
-        # Assign treatment
-        screen_positive = lambda sim: sim.get_intervention("screening").outcomes[
-            "positive"
+
+        radiation_eligible = lambda sim: sim.get_intervention("tx assigner").outcomes[
+            "radiation"
         ]
-        triage_screening = hpv.routine_triage(
-            start_year=start_year,
-            prob=1.0,
+        radiation = hpv.treat_num(
+            prob=(1 - ltfu) / 4,  # assume an additional dropoff in CaTx coverage
             annual_prob=False,
-            product=tx_assigner,
-            eligibility=screen_positive,
-            label="tx assigner",
+            product=hpv.radiation(),
+            eligibility=radiation_eligible,
+            label="radiation",
         )
-
-    ablation_eligible = lambda sim: sim.get_intervention("tx assigner").outcomes[
-        "ablation"
-    ]
-    ablation = hpv.treat_num(
-        prob=1 - ltfu,
-        annual_prob=False,
-        product=ablation,
-        eligibility=ablation_eligible,
-        label="ablation",
-    )
-
-    excision_eligible = lambda sim: list(
-        set(
-            sim.get_intervention("tx assigner").outcomes["excision"].tolist()
-            + sim.get_intervention("ablation").outcomes["unsuccessful"].tolist()
-        )
-    )
-    excision = hpv.treat_num(
-        prob=1 - ltfu,
-        annual_prob=False,
-        product=excision,
-        eligibility=excision_eligible,
-        label="excision",
-    )
-
-    radiation_eligible = lambda sim: sim.get_intervention("tx assigner").outcomes[
-        "radiation"
-    ]
-    radiation = hpv.treat_num(
-        prob=(1 - ltfu) / 4,  # assume an additional dropoff in CaTx coverage
-        annual_prob=False,
-        product=hpv.radiation(),
-        eligibility=radiation_eligible,
-        label="radiation",
-    )
-
-    if triage is not None:
-        st_intvs = [
-            screening,
-            triage_screening,
-            assign_treatment,
-            ablation,
-            excision,
-            radiation,
-        ]
+        st_intvs = [catchup_vx, screening, triage_screening, ablation, excision, radiation]
+        
     else:
-        st_intvs = [screening, triage_screening, ablation, excision, radiation]
+        # regular screening
+    
+
+        len_age_range = (age_range[1] - age_range[0]) / 2
+
+        model_annual_screen_prob = 1 - (1 - screen_coverage) ** (1 / len_age_range)
+
+        # Routine screening
+        screen_eligible = lambda sim: np.isnan(sim.people.date_screened) | (
+            sim.t > (sim.people.date_screened + 10 / sim["dt"])
+        )
+        screening = hpv.routine_screening(
+            product=primary_test,
+            prob=model_annual_screen_prob,
+            eligibility=screen_eligible,
+            age_range=[30, 50],
+            start_year=start_year,
+            label="screening",
+        )
+
+        if triage is not None:
+            # Triage screening
+            screen_positive = lambda sim: sim.get_intervention("screening").outcomes[
+                "positive"
+            ]
+            triage_screening = hpv.routine_triage(
+                start_year=start_year,
+                prob=1 - ltfu,
+                annual_prob=False,
+                product=triage_test,
+                eligibility=screen_positive,
+                label="triage",
+            )
+            triage_positive = lambda sim: sim.get_intervention("triage").outcomes[
+                "positive"
+            ]
+            assign_treatment = hpv.routine_triage(
+                start_year=start_year,
+                prob=1.0,
+                annual_prob=False,
+                product=tx_assigner,
+                eligibility=triage_positive,
+                label="tx assigner",
+            )
+        else:
+            # Assign treatment
+            screen_positive = lambda sim: sim.get_intervention("screening").outcomes[
+                "positive"
+            ]
+            triage_screening = hpv.routine_triage(
+                start_year=start_year,
+                prob=1.0,
+                annual_prob=False,
+                product=tx_assigner,
+                eligibility=screen_positive,
+                label="tx assigner",
+            )
+
+        ablation_eligible = lambda sim: sim.get_intervention("tx assigner").outcomes[
+            "ablation"
+        ]
+        ablation = hpv.treat_num(
+            prob=1 - ltfu,
+            annual_prob=False,
+            product=ablation,
+            eligibility=ablation_eligible,
+            label="ablation",
+        )
+
+        excision_eligible = lambda sim: list(
+            set(
+                sim.get_intervention("tx assigner").outcomes["excision"].tolist()
+                + sim.get_intervention("ablation").outcomes["unsuccessful"].tolist()
+            )
+        )
+        excision = hpv.treat_num(
+            prob=1 - ltfu,
+            annual_prob=False,
+            product=excision,
+            eligibility=excision_eligible,
+            label="excision",
+        )
+
+        radiation_eligible = lambda sim: sim.get_intervention("tx assigner").outcomes[
+            "radiation"
+        ]
+        radiation = hpv.treat_num(
+            prob=(1 - ltfu) / 4,  # assume an additional dropoff in CaTx coverage
+            annual_prob=False,
+            product=hpv.radiation(),
+            eligibility=radiation_eligible,
+            label="radiation",
+        )
+
+        if triage is not None:
+            st_intvs = [
+                screening,
+                triage_screening,
+                assign_treatment,
+                ablation,
+                excision,
+                radiation,
+            ]
+        else:
+            st_intvs = [screening, triage_screening, ablation, excision, radiation]
 
     return st_intvs
 

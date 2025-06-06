@@ -78,8 +78,7 @@ def make_msims(sims, use_mean=True):
 
 def run_scens(
     location=None,
-    screen_intvs=None,
-    vx_intvs=None,  # Input data
+    scenarios=None,  # Input data
     debug=0,
     n_seeds=n_seeds,
     verbose=-1,  # Sim settings
@@ -93,35 +92,33 @@ def run_scens(
     # Set up iteration arguments
     ikw = []
     count = 0
-    n_sims = len(screen_intvs) * len(vx_intvs) * n_seeds
+    n_sims = len(scenarios) * n_seeds
 
-    for i_sc, sc_label, screen_scen_pars in screen_intvs.enumitems():
-        for i_vx, vx_label, vx_scen_pars in vx_intvs.enumitems():
-            for i_s in range(n_seeds):  # n samples per cluster
-                count += 1
-                meta = sc.objdict()
-                meta.count = count
-                meta.n_sims = n_sims
-                meta.inds = [i_sc, i_vx, i_s]
-                meta.vals = sc.objdict(
+    for i_sc, sc_label, scenario_pars in scenarios.enumitems():
+        for i_s in range(n_seeds):  # n samples per cluster
+            count += 1
+            meta = sc.objdict()
+            meta.count = count
+            meta.n_sims = n_sims
+            meta.inds = [i_sc, i_s]
+            meta.vals = sc.objdict(
                     sc.mergedicts(
-                            screen_scen_pars,
-                            vx_scen_pars,
+                            scenario_pars['screen_scen'],
+                            scenario_pars['vx_scen'],
                             dict(
                                 seed=i_s,
-                                screen_scen=sc_label,
-                                vx_scen=vx_label
+                                scen=sc_label,
                             ),
                         )
                     )
-                ikw.append(
+            ikw.append(
                         sc.objdict(
-                            screen_intv=screen_scen_pars,
-                            vx_intv=vx_scen_pars,
+                            screen_intv=scenario_pars['screen_scen'],
+                            vx_intv=scenario_pars['vx_scen'],
                             seed=i_s,
                         )
                     )
-                ikw[-1].meta = meta
+            ikw[-1].meta = meta
 
     # Actually run
     sc.heading(f"Running {len(ikw)} scenario sims...")
@@ -142,7 +139,6 @@ def run_scens(
     )
 
     products = [
-        "new_poc_hpv_screens",
         "new_hpv_screens",
         "new_vaccinations",
         "new_thermal_ablations",
@@ -152,12 +148,12 @@ def run_scens(
 
     # Rearrange sims
     sims = np.empty(
-        (len(screen_intvs), len(vx_intvs), n_seeds), dtype=object
+        (len(scenarios), n_seeds), dtype=object
     )
     econdfs = sc.autolist()
     for sim in all_sims:  # Unflatten array
-        i_sc, i_vx, i_s = sim.meta.inds
-        sims[i_sc, i_vx, i_s] = sim
+        i_sc, i_s = sim.meta.inds
+        sims[i_sc, i_s] = sim
         econdf = pd.DataFrame()
         if i_s == 0:
             product_res = sim.get_analyzer(an.econ_analyzer).df
@@ -166,8 +162,7 @@ def run_scens(
             econdf["dalys"] = sim.get_analyzer(an.dalys).dalys
             econdf["location"] = location
             econdf["seed"] = i_s
-            econdf["screen_scen"] = sim.meta.vals["screen_scen"]
-            econdf["vx_scen"] = sim.meta.vals["vx_scen"]
+            econdf["scenario"] = sim.meta.vals["scen"]
             econdfs += econdf
         sim["analyzers"] = []  # Remove the analyzer so we don't need to reduce it
     econ_df = pd.concat(econdfs)
@@ -175,21 +170,20 @@ def run_scens(
 
     # Prepare to convert sims to msims
     all_sims_for_multi = []
-    for i_sc in range(len(screen_intvs)):
-        for i_vx in range(len(vx_intvs)):
-            sim_seeds = sims[i_sc, i_vx, :].tolist()
-            all_sims_for_multi.append(sim_seeds)
+    for i_sc in range(len(scenarios)):
+        sim_seeds = sims[i_sc, :].tolist()
+        all_sims_for_multi.append(sim_seeds)
 
     # Convert sims to msims
-    msims = np.empty((len(screen_intvs), len(vx_intvs)), dtype=object)
+    msims = np.empty((len(scenarios)), dtype=object)
     all_msims = sc.parallelize(make_msims, iterarg=all_sims_for_multi)
     print("finished making msims")
 
     # Now strip out all the results and place them in a dataframe
     dfs = sc.autolist()
     for msim in all_msims:
-        i_sc, i_vx = msim.meta.inds
-        msims[i_sc, i_vx] = msim
+        i_sc = msim.meta.inds
+        msims[i_sc] = msim
         df = pd.DataFrame()
         df["year"] = msim.results["year"]
         df["cancers"] = msim.results["cancers"][:]  # TODO: process in a loop
@@ -219,8 +213,7 @@ def run_scens(
         df["location"] = location
 
         # Store metadata about run
-        df["vx_scen"] = msim.meta.vals["vx_scen"]
-        df["screen_scen"] = msim.meta.vals["screen_scen"]
+        df["scenario"] = msim.meta.vals["scen"]
         dfs += df
 
     alldf = pd.concat(dfs)
@@ -249,218 +242,57 @@ if __name__ == "__main__":
                 calib_filestem = "_nov13"
 
             # Construct the scenarios
-            # Screening scenarios    : No screening, 35% coverage, 70% coverage
-            # Vaccine scenarios      : No vaccine, 50% coverage, 90% coverage
-
+            # 1. 90% vx coverage of 9-14 year olds
+            # 2. 90% vx coverage of 9-14 year olds + screening with 70% coverage
+            # 3. 90% vx coverage of 9-14 year olds + HPV FASTER: 90% coverage of 22-40 year olds after S&T 
 
             hpv_screen = dict(precin=0.45, cin=0.95, cancerous=0.95)
+            vx_scen = dict(
+                        vx_coverage=0.9,
+                        age_range=(9, 14),
+                        start_year=2026,
+                    )
             screen_scens = sc.objdict(
                 {
                     "No screening": {},
-                    "HPV, 35% sc cov, 50% LTFU": dict(
-                        primary=hpv_screen,
-                        screen_coverage=0.35,
-                        start_year=2030,
-                        ltfu=0.5,
-                    ),
-                    "HPV, 70% sc cov, 50% LTFU": dict(
+                    "70% coverage, 10% LTFU": dict(
                         primary=hpv_screen,
                         screen_coverage=0.7,
-                        start_year=2030,
-                        ltfu=0.5,
+                        start_year=2026,
+                        ltfu=0.1,
                     ),
-                    "HPV, 35% sc cov, 30% LTFU": dict(
-                        primary=hpv_screen,
-                        screen_coverage=0.35,
-                        start_year=2030,
-                        ltfu=0.3,
-                    ),
-                    "HPV, 70% sc cov, 30% LTFU": dict(
+                    'HPV FASTER': dict(
                         primary=hpv_screen,
                         screen_coverage=0.7,
-                        start_year=2030,
+                        start_year=2026,
                         ltfu=0.3,
-                    ),
+                        age_range=(22, 40),
+                        paired_px=True,
+                    )
                 }
             )
-
-            vx_scens = sc.objdict(
+            scenarios = sc.objdict(
                 {
-                    # 'No vaccine': {},
-                    # "Vx, 50% cov, 9-14": dict(
-                    #     vx_coverage=0.5,
-                    #     age_range=(9, 14),
-                    #     start_year=2030,
-                    # ),
-                    "Vx, 70% cov, 9-14": dict(
-                        vx_coverage=0.7,
-                        age_range=(9, 14),
-                        start_year=2030,
+                    "Status quo": sc.objdict(
+                        screen_scen=screen_scens["No screening"],
+                        vx_scen=vx_scen,
                     ),
-                    # "Vx, 90% cov, 9-14": dict(
-                    #     vx_coverage=0.9,
-                    #     age_range=(9, 14),
-                    #     start_year=2030,
-                    # ),
+                    "Increase screening": sc.objdict(
+                        screen_scen=screen_scens["70% coverage, 10% LTFU"],
+                        vx_scen=vx_scen,
+                    ),
+                    "HPV FASTER": sc.objdict(
+                        screen_scen=screen_scens['HPV FASTER'],
+                        vx_scen=vx_scen,
+                    ),
                 }
             )
-
+            
             alldf, msims = run_scens(
-                screen_intvs=screen_scens,
-                vx_intvs=vx_scens,
+                scenarios=scenarios,
                 location=location,
                 debug=debug,
                 calib_filestem=calib_filestem,
-                filestem="_feb28",
+                filestem="_june6",
             )
 
-    elif "plot_scenarios" in to_run:
-        locations = [
-            "india",  # 0
-            "indonesia",  # 1
-            "nigeria",  # 2
-            "tanzania",  # 3
-            "bangladesh",  # 4
-            "myanmar",  # 5
-            "uganda",  # 6
-            "ethiopia",  # 7
-            "drc",  # 8
-            # 'kenya'  # 9
-        ]
-
-        # for location in locations:
-        #     ut.plot_txv_impact(
-        #         location=location,
-        #         background_scens={
-        #             '90% PxV\n0% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'No screening'},
-        #             '90% PxV\n35% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'HPV, 35% sc cov'},
-        #             '90% PxV\n70% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'HPV, 70% sc cov, 90% tx cov'},
-        #         },
-        #         txvx_efficacies=['90/0', '70/30', '50/50', '90/50'],
-        #         txvx_ages=['30', '35', '40'],
-        #     )
-
-        #     ut.make_sens(
-        #         location=location,
-        #         background_scens={
-        #             '90% PxV\n0% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'No screening'},
-        #             '90% PxV\n35% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'HPV, 35% sc cov'},
-        #             '90% PxV\n70% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'HPV, 70% sc cov, 90% tx cov'},
-        #         },
-        #         txvx_efficacies=['90/0', '70/30', '50/50', '90/50'],
-        #         txvx_ages=['30', '35', '40'],
-        #         sensitivities=[', cross-protection', ', intro 2035', ', no durable immunity']
-        #     )
-        #
-
-        ut.plot_CEA(
-            locations=locations,
-            background_scens={
-                "90-0-0": {
-                    "vx_scen": "Vx, 90% cov, 9-14",
-                    "screen_scen": "No screening",
-                },
-                "90-35-70": {
-                    "vx_scen": "Vx, 90% cov, 9-14",
-                    "screen_scen": "HPV, 35% sc cov",
-                },
-                "90-70-90": {
-                    "vx_scen": "Vx, 90% cov, 9-14",
-                    "screen_scen": "HPV, 70% sc cov, 90% tx cov",
-                },
-            },
-            txvx_scen="Mass TxV, 90/50, age 30",
-        )
-
-        #
-        # ut.plot_VIMC_compare(
-        #     locations=locations,
-        #     scens=['Vx, 90% cov, 9-14', 'No screening', 'No TxV']
-        # )
-        # ut.compile_IPM_data(
-        #     locations=locations,
-        #     background_scens={
-        #         '90% PxV\n0% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'No screening'},
-        #         '90% PxV\n35% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'HPV, 35% sc cov'},
-        #         '90% PxV\n70% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'HPV, 70% sc cov, 90% tx cov'},
-        #     },
-        #     txvx_scen='Mass TxV, 90/50, age 30',
-        # )
-
-        # ut.plot_infection_outcomes(
-        #     locations=locations,
-        #     do_run=False
-        # )
-
-        # ut.plot_cancer_outcomes(
-        #     locations=locations,
-        #     do_run=False
-        # )
-
-        # ut.plot_hpv_prevalence(
-        #     locations=locations,
-        #     do_run=False
-        # )
-
-        # ut.plot_hpv_progression(
-        #     locations=locations,
-        #     do_run=False
-        # )
-        # ut.make_sens_combined(
-        #     locations=locations,
-        #     background_scen={'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'No screening'},
-        #     txvx_efficacy='90/50',
-        #     txvx_ages=['30', '35', '40'],
-        #     sensitivities=[', cross-protection',', intro 2035', ', no durable immunity']
-        # )
-
-        # ut.plot_residual_burden_combined(
-        #     locations=locations,
-        #     scens={
-        #         '90% PxV, 0% S&T': ['Vx, 90% cov, 9-14', 'No screening'],
-        #         '90% PxV, 35% S&T': ['Vx, 90% cov, 9-14', 'HPV, 35% sc cov'],
-        #         '90% PxV, 70% S&T': ['Vx, 90% cov, 9-14', 'HPV, 70% sc cov, 90% tx cov'],
-        #     }
-        # )
-
-        # ut.plot_txv_impact_combined(
-        #     locations=locations,
-        #     background_scens={
-        #         '90% PxV\n0% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'No screening'},
-        #         '90% PxV\n35% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'HPV, 35% sc cov'},
-        #         '90% PxV\n70% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'HPV, 70% sc cov, 90% tx cov'},
-        #     },
-        #     txvx_efficacies=['90/0', '70/30', '50/50', '90/50'],
-        #     txvx_ages=['30', '35', '40'],
-        # )
-
-        # ut.plot_txv_impact_combined_v2(
-        #     locations=locations,
-        #     background_scens={
-        #         '90% PxV\n0% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'No screening'},
-        #         '90% PxV\n35% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'HPV, 35% sc cov'},
-        #         '90% PxV\n70% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'HPV, 70% sc cov, 90% tx cov'},
-        #     },
-        #     # txvx_efficacies=['90/0', '70/30', '50/50', '90/50'],
-        #     txvx_efficacies=['90/50'],
-        #     txvx_ages=['30'],#, '35', '40'],
-        # )
-
-        # ut.plot_natural_history(
-        #     locations=locations,
-        #     do_run=False
-        # )
-
-        # ut.plot_txv_impact_comparison(
-        #     locations=['nigeria', 'india'],
-        #     background_scens={
-        #         '90% PxV\n0% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'No screening'},
-        #         '90% PxV\n35% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'HPV, 35% sc cov'},
-        #         '90% PxV\n70% S&T': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'HPV, 70% sc cov, 90% tx cov'},
-        #     },
-        #     txvx_efficacies=['90/0', '70/30', '50/50', '90/50'],
-        #     txvx_ages=['30', '35', '40'],
-
-        # )
-
-        print("done")

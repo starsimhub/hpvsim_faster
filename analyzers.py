@@ -99,10 +99,8 @@ class econ_analyzer(hpv.Analyzer):
     def initialize(self, sim):
         super().initialize(sim)
         columns = [
-            "new_poc_hpv_screens",
             "new_hpv_screens",
             "new_vaccinations",
-            "new_tx_vaccinations",
             "new_thermal_ablations",
             "new_leeps",
             "new_cancer_treatments",
@@ -121,17 +119,32 @@ class econ_analyzer(hpv.Analyzer):
 
             # Pull out characteristics of sim to decide what resources we need
             simvals = sim.meta.vals
-            screen_scen_label = simvals.screen_scen
-            vx_scen_label = simvals.vx_scen
-            txvx_scen_label = simvals.txvx_scen
-            if screen_scen_label != "No screening":
-                # Resources
-                if "30% LTFU" in screen_scen_label:
-                    self.df["new_poc_hpv_screens"] += sim.get_intervention(
+            scenario_label = simvals.scen
+            self.df["new_vaccinations"] += sim.get_intervention(
+                    "Routine vx"
+                ).n_products_used.values[idx]
+            self.df["new_vaccinations"] += sim.get_intervention(
+                    "Catchup vx"
+                ).n_products_used.values[idx]
+            if scenario_label == 'Increase screening':
+                self.df["new_hpv_screens"] += sim.get_intervention(
                         "screening"
                     ).n_products_used.values[idx]
-                else:
-                    self.df["new_hpv_screens"] += sim.get_intervention(
+                self.df["new_thermal_ablations"] += sim.get_intervention(
+                    "ablation"
+                ).n_products_used.values[idx]
+                self.df["new_leeps"] += sim.get_intervention(
+                    "excision"
+                ).n_products_used.values[idx]
+                self.df["new_cancer_treatments"] += sim.get_intervention(
+                    "radiation"
+                ).n_products_used.values[idx]
+            elif scenario_label == 'HPV FASTER':
+                # add in HPV FASTER resources
+                self.df["new_vaccinations"] += sim.get_intervention(
+                    "HPV FASTER vx"
+                ).n_products_used.values[idx]
+                self.df["new_hpv_screens"] += sim.get_intervention(
                         "screening"
                     ).n_products_used.values[idx]
                 self.df["new_thermal_ablations"] += sim.get_intervention(
@@ -144,43 +157,7 @@ class econ_analyzer(hpv.Analyzer):
                     "radiation"
                 ).n_products_used.values[idx]
 
-            if vx_scen_label != "No vaccine":
-                # Resources
-                self.df["new_vaccinations"] += sim.get_intervention(
-                    "Routine vx"
-                ).n_products_used.values[idx]
-                self.df["new_vaccinations"] += sim.get_intervention(
-                    "Catchup vx"
-                ).n_products_used.values[idx]
-
-            if txvx_scen_label != "No TxV":
-                # Resources
-                if "TnV" in txvx_scen_label:
-                    self.df["new_poc_hpv_screens"] += sim.get_intervention(
-                        "txvx_campaign_testing"
-                    ).n_products_used.values[idx]
-                    self.df["new_poc_hpv_screens"] += sim.get_intervention(
-                        "txvx_routine_testing"
-                    ).n_products_used.values[idx]
-                    self.df["new_tx_vaccinations"] += sim.get_intervention(
-                        "routine txvx"
-                    ).n_products_used.values[idx]
-                    self.df["new_tx_vaccinations"] += sim.get_intervention(
-                        "routine txvx 2nd dose"
-                    ).n_products_used.values[idx]
-                else:
-                    self.df["new_tx_vaccinations"] += sim.get_intervention(
-                        "campaign txvx"
-                    ).n_products_used.values[idx]
-                    self.df["new_tx_vaccinations"] += sim.get_intervention(
-                        "campaign txvx 2nd dose"
-                    ).n_products_used.values[idx]
-                    self.df["new_tx_vaccinations"] += sim.get_intervention(
-                        "routine txvx"
-                    ).n_products_used.values[idx]
-                    self.df["new_tx_vaccinations"] += sim.get_intervention(
-                        "routine txvx 2nd dose"
-                    ).n_products_used.values[idx]
+ 
 
         return
 
