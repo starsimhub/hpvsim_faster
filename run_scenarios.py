@@ -185,6 +185,9 @@ def run_scens(
         msims[i_sc] = msim
         df = pd.DataFrame()
         df["year"] = msim.results["year"]
+        df["infections"] = msim.results["infections"][:]
+        df["infections_low"] = msim.results["infections"].low
+        df["infections_high"] = msim.results["infections"].high
         df["cancers"] = msim.results["cancers"][:]  # TODO: process in a loop
         df["cancers_low"] = msim.results["cancers"].low
         df["cancers_high"] = msim.results["cancers"].high
