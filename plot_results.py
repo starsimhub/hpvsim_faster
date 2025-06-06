@@ -418,7 +418,7 @@ def plot_fig1(locations, scens, txv_scens, filestem):
     return
 
 
-def plot_fig1_v2(locations, scens, txv_scens, filestem):
+def plot_fig1_v2(locations, scens, filestem):
 
     ut.set_font(size=24)
     dfs = sc.autolist()
@@ -431,39 +431,9 @@ def plot_fig1_v2(locations, scens, txv_scens, filestem):
     x = np.arange(len(scens))  # the label locations
     width = 0.2  # the width of the bars
 
-    r1 = np.arange(len(scens))
-    r2 = [x + width for x in r1]
-    r3 = [x + width for x in r2]
-    r4 = [x + width for x in r3]
-
-    xes = [r1, r2, r3, r4]
-    fig, ax = pl.subplots(figsize=(16, 8))
-    for ib, (ib_label, ib_scens) in enumerate(scens.items()):
-        vx_scen_label = ib_scens[0]
-        screen_scen_label = ib_scens[1]
-        for it, (txvx_scen, txvx_scen_label) in enumerate(txv_scens.items()):
-            if ib == 0 and "HPV" in txvx_scen_label:
-                pass
-            elif (
-                "HPV" in txvx_scen_label
-                and txvx_scen_label[:-10] != screen_scen_label[:-10]
-            ):
-                pass
-            else:
-                if "HPV" in txvx_scen_label:
-                    screen_scen_label_to_use = sc.dcp(txvx_scen_label)
-                    txvx_scen_to_use = "No TxV"
-                    it = 3
-                else:
-                    screen_scen_label_to_use = screen_scen_label
-                    txvx_scen_to_use = txvx_scen_label
-
-                df = (
-                    bigdf[
-                        (bigdf.screen_scen == screen_scen_label_to_use)
-                        & (bigdf.vx_scen == vx_scen_label)
-                        & (bigdf.txvx_scen == txvx_scen_to_use)
-                    ]
+    fig, axes = pl.subplots(nrows=2, figsize=(10, 10))
+    for ib, ib_label in enumerate(scens):
+        df = (bigdf[(bigdf.scenario == ib_label)]
                     .groupby("year")[
                         [
                             "cancers",
@@ -474,65 +444,42 @@ def plot_fig1_v2(locations, scens, txv_scens, filestem):
                             "cancer_deaths_high",
                         ]
                     ]
-                    .sum()[2030:]
+                    .sum()[2025:]
                 )
 
-                cum_cases = np.sum(df["cancers"])
-                cum_cases_2040 = np.sum(df["cancers"].values[:10])
-
-                if txvx_scen_label == "No TxV":
-                    txvx_scen_label_to_plot = "Option 1: Do nothing"
-                else:
-                    txvx_scen_label_to_plot = txvx_scen
-                if ib == 1:
-                    ax.bar(
-                        xes[it][ib],
+        cum_cases = np.sum(df["cancers"])
+        axes[0].plot(df.index, df["cancers"], color=colors[ib], label=ib_label)
+        axes[0].fill_between(
+            df.index,
+            df["cancers_low"],
+            df["cancers_high"],
+            color=colors[ib],
+            alpha=0.3,
+        )
+        axes[1].bar(
+                        x[ib],
                         cum_cases,
-                        width,
-                        color=colors[it],
-                        edgecolor="black",
-                        label=txvx_scen_label_to_plot,
-                    )
-
-                else:
-                    ax.bar(
-                        xes[it][ib],
-                        cum_cases,
-                        width,
-                        color=colors[it],
+                        color=colors[ib],
                         edgecolor="black",
                     )
-                ax.bar(
-                    xes[it][ib],
-                    cum_cases_2040,
-                    width,
-                    color=colors[it],
-                    hatch="///",
-                    edgecolor="black",
+        axes[1].text(x[ib],
+                cum_cases+ 10e4,
+                round(cum_cases / 1e6, 1),
+                ha="center",
                 )
-
-                ax.text(
-                    xes[it][ib],
-                    cum_cases_2040 + 10e4,
-                    round(cum_cases_2040 / 1e6, 1),
-                    ha="center",
-                )
-                ax.text(
-                    xes[it][ib],
-                    cum_cases + 10e4,
-                    round(cum_cases / 1e6, 1),
-                    ha="center",
-                )
-
-    ax.set_ylabel("Cervical cancer cases (2030-2060)")
-    ax.set_xticks(x + 1.5 * width, scens.keys())
-    ax.set_xlabel("Background screen coverage")
-    ax.set_ylim(top=15e6)
-    sc.SIticks(ax)
-    ax.legend(ncol=2)
+               
+    axes[1].set_xticks(x, scens)
+    axes[0].set_ylim(bottom=0)
+    axes[0].set_ylabel("Cervical cancer cases")
+    axes[0].set_xlabel("Year")
+    axes[1].set_ylabel("Cervical cancer cases (2025-2060)")
+    axes[1].set_xlabel("Scenario")
+    axes[0].legend()
+    for ax in axes:
+        sc.SIticks(ax)
 
     fig.tight_layout()
-    fig_name = f"{ut.figfolder}/CC_burden_v2{filestem}.png"
+    fig_name = f"{ut.figfolder}/CC_burden_{filestem}.png"
     sc.savefig(fig_name, dpi=100)
 
     return
@@ -2762,6 +2709,12 @@ if __name__ == "__main__":
         "ethiopia",  # 7
         "drc",  # 8
     ]
+    
+    plot_fig1_v2(
+        locations=locations,
+        scens=['Status quo', 'Increase screening', 'HPV FASTER'],
+        filestem="_june6",
+    )
 
     plot_total_costs(
         locations=locations,
@@ -2894,28 +2847,7 @@ if __name__ == "__main__":
     #     filestem="_feb23",
     # )
 
-    plot_fig1_v2(
-        locations=locations,
-        scens={
-            "None": ["Vx, 70% cov, 9-14", "No screening"],
-            "35%": [
-                "Vx, 70% cov, 9-14",
-                "HPV, 35% sc cov, 50% LTFU",
-            ],
-            "70%": [
-                "Vx, 70% cov, 9-14",
-                "HPV, 70% sc cov, 50% LTFU",
-            ],
-        },
-        txv_scens={
-            "Option 1: Do nothing": "No TxV",
-            "Option 3a: Mass TxV (90/50)": "Mass TxV, 90/50, age 30",
-            "Option 3b: TnV TxV (90/50)": "TnV TxV, 90/50, age 30",
-            "Option 2a: POC HPV test (30% LTFU)": "HPV, 35% sc cov, 30% LTFU",
-            "POC HPV test (30% LTFU)v2": "HPV, 70% sc cov, 30% LTFU",
-        },
-        filestem="_feb25",
-    )
+
 
     # plot_fig1(
     #     locations=locations,

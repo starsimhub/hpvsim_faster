@@ -264,8 +264,8 @@ if __name__ == "__main__":
                         primary=hpv_screen,
                         screen_coverage=0.7,
                         start_year=2026,
-                        ltfu=0.3,
-                        age_range=(22, 40),
+                        ltfu=0.1,
+                        age_range=(22, 50),
                         paired_px=True,
                     )
                 }
