@@ -61,13 +61,12 @@ def make_msims(sims, use_mean=True):
 
     msim = hpv.MultiSim(sims)
     msim.reduce(use_mean=use_mean)
-    i_sc, i_vx, i_s = sims[0].meta.inds
+    i_sc, i_s = sims[0].meta.inds
     for s, sim in enumerate(sims):  # Check that everything except parameter set matches
         assert i_sc == sim.meta.inds[0]
-        assert i_vx == sim.meta.inds[1]
-        assert (s == 0) or i_s != sim.meta.inds[2]
+        assert (s == 0) or i_s != sim.meta.inds[1]
     msim.meta = sc.objdict()
-    msim.meta.inds = [i_sc, i_vx]
+    msim.meta.inds = [i_sc]
     msim.meta.vals = sc.dcp(sims[0].meta.vals)
     msim.meta.vals.pop("seed")
 
