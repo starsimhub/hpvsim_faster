@@ -13,7 +13,7 @@ resfolder = "results"
 figfolder = "figures"
 datafolder = "data"
 
-cost_dict = dict(poc_hpv=7, hpv=15, txv=6.92, leep=41.76, ablation=11.76, cancer=450)
+cost_dict = dict(vx=7, hpv=15, txv=6.92, leep=41.76, ablation=11.76, cancer=450)
 
 
 def plot_burden_redux(locations, background_scen):
@@ -417,9 +417,7 @@ def plot_fig1(locations, scens, txv_scens, filestem):
 
     return
 
-
-def plot_fig1_v2(locations, scens, filestem):
-
+def plot_by_country(locations, scens, filestem):
     ut.set_font(size=24)
     dfs = sc.autolist()
     for location in locations:
@@ -431,7 +429,57 @@ def plot_fig1_v2(locations, scens, filestem):
     x = np.arange(len(scens))  # the label locations
     width = 0.2  # the width of the bars
 
-    fig, axes = pl.subplots(nrows=2, figsize=(10, 10))
+    fig, axes = pl.subplots(nrows=3, ncols=3, figsize=(12, 12))
+    axes = axes.flatten()
+    for il, location in enumerate(locations):
+        if location == "drc":
+            axes[il].set_title("DRC")
+        else:
+            axes[il].set_title(location.capitalize())
+
+        for ib, ib_label in enumerate(scens):
+            df = (
+                bigdf[
+                    (bigdf.scenario == ib_label)
+                    & (bigdf.location == location)
+                ]
+                .groupby("year")[["asr_cancer_incidence", "asr_cancer_incidence_low", "asr_cancer_incidence_high"]]
+                .sum()[2020:]
+            )
+           
+            axes[il].plot(df.index, df["asr_cancer_incidence"], color=colors[ib], label=ib_label)
+            axes[il].fill_between(
+                df.index,
+                df["asr_cancer_incidence_low"],
+                df["asr_cancer_incidence_high"],
+                color=colors[ib],
+                alpha=0.3,
+            )
+    # axes[0].legend()
+    for ax in axes:
+        sc.SIticks(ax)
+        ax.set_ylim(bottom=0)
+    fig.suptitle("Cervical cancer incidence by country and scenario", fontsize=24)
+    fig.tight_layout()
+    fig_name = f"{ut.figfolder}/CC_burden_by_country{filestem}.png"
+    sc.savefig(fig_name, dpi=100)
+    return
+
+
+def plot_fig1_v2(locations, scens, filestem):
+
+    ut.set_font(size=20)
+    dfs = sc.autolist()
+    for location in locations:
+        df = sc.loadobj(f"{ut.resfolder}/{location}{filestem}.obj")
+        dfs += df
+
+    bigdf = pd.concat(dfs)
+    colors = sc.gridcolors(10)
+    x = np.arange(len(scens))  # the label locations
+    width = 0.2  # the width of the bars
+
+    fig, axes = pl.subplots(nrows=2, figsize=(12, 12))
     for ib, ib_label in enumerate(scens):
         df = (bigdf[(bigdf.scenario == ib_label)]
                     .groupby("year")[
@@ -439,20 +487,20 @@ def plot_fig1_v2(locations, scens, filestem):
                             "cancers",
                             "cancers_low",
                             "cancers_high",
-                            "cancer_deaths",
-                            "cancer_deaths_low",
-                            "cancer_deaths_high",
+                            "infections",
+                            "infections_low",
+                            "infections_high",
                         ]
                     ]
                     .sum()[2025:]
                 )
 
         cum_cases = np.sum(df["cancers"])
-        axes[0].plot(df.index, df["cancers"], color=colors[ib], label=ib_label)
+        axes[0].plot(df.index, df["infections"], color=colors[ib], label=ib_label)
         axes[0].fill_between(
             df.index,
-            df["cancers_low"],
-            df["cancers_high"],
+            df["infections_low"],
+            df["infections_high"],
             color=colors[ib],
             alpha=0.3,
         )
@@ -467,10 +515,11 @@ def plot_fig1_v2(locations, scens, filestem):
                 round(cum_cases / 1e6, 1),
                 ha="center",
                 )
-               
+    # edit list of scens and break strings with \n after comma
+    scens = [scen.replace(", ", ",\n") for scen in scens]           
     axes[1].set_xticks(x, scens)
     axes[0].set_ylim(bottom=0)
-    axes[0].set_ylabel("Cervical cancer cases")
+    axes[0].set_ylabel("HPV infections")
     axes[0].set_xlabel("Year")
     axes[1].set_ylabel("Cervical cancer cases (2025-2060)")
     axes[1].set_xlabel("Scenario")
@@ -479,7 +528,7 @@ def plot_fig1_v2(locations, scens, filestem):
         sc.SIticks(ax)
 
     fig.tight_layout()
-    fig_name = f"{ut.figfolder}/CC_burden_{filestem}.png"
+    fig_name = f"{ut.figfolder}/CC_burden{filestem}.png"
     sc.savefig(fig_name, dpi=100)
 
     return
@@ -1193,129 +1242,156 @@ def plot_CEA_sensv2(
 
     return
 
-
-def plot_total_costs(
+def plot_resources(
     locations=None,
-    background_scens=None,
-    txvx_scens=None,
+    scens=None,
+    filestem=None,
+):
+    ut.set_font(size=14)
+    dfs = sc.autolist()
+
+    for location in locations:
+        impactdf = sc.loadobj(f"{ut.resfolder}/{location}{filestem}.obj")
+        dfs += impactdf
+
+    bigdf = pd.concat(dfs)
+
+    colors = sc.gridcolors(10)
+    total_costs = 0
+    fig, axes = pl.subplots(nrows=2, figsize=(10, 10), sharex=True)
+    for ib, scen in enumerate(scens):
+        df = df = (bigdf[(bigdf.scenario == scen)]
+                    .groupby("year")[
+                        [
+                            "n_screened",
+                            "n_screened_low",
+                            "n_screened_high",
+                            "n_vaccinated",
+                            "n_vaccinated_low",
+                            "n_vaccinated_high",
+                        ]
+                    ]
+                    .sum()[2025:]
+                )
+        
+        axes[0].plot(
+            df.index,
+            df["n_screened"],
+            color=colors[ib],
+            label=f"{scen}",
+        )
+        axes[0].fill_between(
+            df.index,
+            df["n_screened_low"],
+            df["n_screened_high"],
+            color=colors[ib],
+            alpha=0.2,
+        )
+        
+        axes[1].plot(
+            df.index,
+            df["n_vaccinated"],
+            color=colors[ib],
+            label=f"{scen} vaccinated",
+        )
+        axes[1].fill_between(
+            df.index,
+            df["n_vaccinated_low"],
+            df["n_vaccinated_high"],
+            color=colors[ib],
+            alpha=0.2,
+        )
+
+    axes[1].set_xlabel("Year")
+    axes[0].set_ylabel("Number screened")
+    axes[1].set_ylabel("Number vaccinated")
+    for ax in axes:
+        sc.SIticks(ax)
+    axes[0].legend(title="Scenario", loc="upper left")
+    fig.tight_layout()
+    fig_name = f"{ut.figfolder}/resources{filestem}.png"
+    fig.savefig(fig_name, dpi=100)
+    return
+
+def plot_total_costs_dalys(
+    locations=None,
+    scens=None,
     filestem=None,
 ):
     ut.set_font(size=14)
     econdfs = sc.autolist()
 
     for location in locations:
+    
         econdf = sc.loadobj(f"{ut.resfolder}/{location}{filestem}_econ.obj")
         econdfs += econdf
 
     econ_df = pd.concat(econdfs)
 
-    x = np.arange(len(background_scens))  # the label locations
-    width = 0.2  # the width of the bars
-
-    r1 = np.arange(len(background_scens))
-    r2 = [x + width for x in r1]
-    r3 = [x + width for x in r2]
-    r4 = [x + width for x in r3]
-    xes = [r1, r2, r3, r4]
-
-    txvx_scen_label = {
-        "No TxV": "Option 1: Do nothing",
-        "Mass TxV, 90/50, age 30": "Option 3a",
-        "TnV TxV, 90/50, age 30": "Option 3b",
-        "HPV, 35% sc cov, 30% LTFU": "Option 2a",
-        "HPV, 70% sc cov, 30% LTFU": "Option 2a",
-    }
+    x = np.arange(len(scens))  # the label locations
 
     colors = sc.gridcolors(10)
-
-    fig, ax = pl.subplots(figsize=(10, 6))
-    for ib, (background_scen_label, background_scen) in enumerate(
-        background_scens.items()
-    ):
-        vx_scen_label = background_scen["vx_scen"]
-        screen_scen_label = background_scen["screen_scen"]
-        for it, txvx_scen in enumerate(txvx_scens):
-            if ib == 0 and "HPV" in txvx_scen:
-                it -= 1
-                pass
-            elif "HPV" in txvx_scen and txvx_scen[:-10] != screen_scen_label[:-10]:
-                it -= 1
-            else:
-                total_costs = 0
-                if "HPV" in txvx_scen:
-                    screen_scen_label_to_use = sc.dcp(txvx_scen)
-                    txvx_scen_to_use = "No TxV"
-                    it = 3
-                else:
-                    screen_scen_label_to_use = screen_scen_label
-                    txvx_scen_to_use = txvx_scen
-                for location in locations:
-
-                    TxV = sc.dcp(
+    fig, axes = pl.subplots(nrows=2, figsize=(10, 10), sharex=True)
+    for ib, scen in enumerate(scens):
+        df = sc.dcp(
                         econ_df[
-                            (econ_df.screen_scen == screen_scen_label_to_use)
-                            & (econ_df.vx_scen == vx_scen_label)
-                            & (econ_df.txvx_scen == txvx_scen_to_use)
-                            & (econ_df.location == location)
-                        ][
+                            (econ_df.scenario == scen)
+                            ][
                             [
                                 "dalys",
-                                "new_poc_hpv_screens",
                                 "new_hpv_screens",
                                 "new_vaccinations",
-                                "new_tx_vaccinations",
                                 "new_thermal_ablations",
                                 "new_leeps",
                                 "new_cancer_treatments",
                             ]
                         ]
-                    )
+                    ).sum()
 
-                    cost_TxV = (
-                        np.sum(1.8 * TxV["new_tx_vaccinations"] * cost_dict["txv"])
-                        + np.sum(TxV["new_hpv_screens"] * cost_dict["hpv"])
-                        + np.sum(TxV["new_poc_hpv_screens"] * cost_dict["poc_hpv"])
-                        + np.sum(TxV["new_leeps"] * cost_dict["leep"])
-                        + np.sum(TxV["new_thermal_ablations"] * cost_dict["ablation"])
-                        + np.sum(TxV["new_cancer_treatments"] * cost_dict["cancer"])
+        cost = (
+            + np.sum(df["new_vaccinations"] * cost_dict["vx"])
+            + np.sum(df["new_hpv_screens"] * cost_dict["hpv"])
+            + np.sum(df["new_leeps"] * cost_dict["leep"])
+            + np.sum(df["new_thermal_ablations"] * cost_dict["ablation"])
+            + np.sum(df["new_cancer_treatments"] * cost_dict["cancer"])
                     )
-                    total_costs += cost_TxV
-                if ib == 2:
-
-                    ax.bar(
-                        xes[it][ib],
-                        total_costs,
-                        color=colors[it],
-                        width=width,
-                        edgecolor="black",
-                        label=txvx_scen_label[txvx_scen],
-                    )
-                else:
-                    ax.bar(
-                        xes[it][ib],
-                        total_costs,
-                        color=colors[it],
-                        width=width,
+        axes[0].bar(
+                        x[ib],
+                        cost,
+                        color=colors[ib],
                         edgecolor="black",
                     )
-
-                ax.text(
-                    xes[it][ib],
-                    total_costs + 100e6,
-                    f"${round(total_costs / 1e9, 1)}",
+        
+        axes[0].text(
+                    x[ib],
+                    cost + 100e6,
+                    f"${round(cost / 1e9, 1)}",
                     ha="center",
                 )
+        
+        axes[1].bar(
+                        x[ib],
+                        df["dalys"],
+                        color=colors[ib],
+                        edgecolor="black",
+                    )
+        axes[1].text(
+                    x[ib],
+                    df["dalys"] + 100e3,
+                    f"{round(df['dalys'] / 1e6, 1)}",
+                    ha="center",
+                )
+    scens = [scen.replace(", ", ",\n") for scen in scens]       
+    axes[1].set_xticks(x, scens)
 
-    ax.set_xticks(x + 1.5 * width, background_scens.keys())
-
-    # ax.set_ylim(top=15e9)
-    ax.legend(ncol=2)
-    ax.set_xlabel("Screen coverage")
-    ax.set_ylabel("Total costs (2030-2060)")
-    sc.SIticks(ax)
+    axes[1].set_xlabel("Scenario")
+    axes[0].set_ylabel("Total costs (2025-2060)")
+    axes[1].set_ylabel("Total DALYs (2025-2060)")
+    for ax in axes:
+        sc.SIticks(ax)
 
     fig.tight_layout()
-    fig_name = f"{ut.figfolder}/total_cost{filestem}.png"
+    fig_name = f"{ut.figfolder}/total_costs_dalys{filestem}.png"
     fig.savefig(fig_name, dpi=100)
     return
 
@@ -2712,33 +2788,42 @@ if __name__ == "__main__":
     
     plot_fig1_v2(
         locations=locations,
-        scens=['Status quo', 'Increase screening', 'HPV FASTER'],
+        scens=['Status quo', 
+               'Increase screening', 
+               'HPV FASTER, upper age 30',
+               'HPV FASTER, upper age 40',
+               'HPV FASTER, upper age 50',],
+        filestem="_june6",
+    )
+    
+    plot_by_country(
+        locations=locations,
+        scens=['Status quo', 
+               'Increase screening', 
+               'HPV FASTER, upper age 30',
+               'HPV FASTER, upper age 40',
+               'HPV FASTER, upper age 50',],
         filestem="_june6",
     )
 
-    plot_total_costs(
+    plot_resources(
         locations=locations,
-        background_scens={
-            "None": {"vx_scen": "Vx, 70% cov, 9-14", "screen_scen": "No screening"},
-            "35%": {
-                "vx_scen": "Vx, 70% cov, 9-14",
-                "screen_scen": "HPV, 35% sc cov, 50% LTFU",
-            },
-            "70%": {
-                "vx_scen": "Vx, 70% cov, 9-14",
-                "screen_scen": "HPV, 70% sc cov, 50% LTFU",
-            },
-        },
-        txvx_scens=[
-            "No TxV",
-            "Mass TxV, 90/50, age 30",
-            # "Mass TxV, 70/30, age 30",
-            "TnV TxV, 90/50, age 30",
-            # "TnV TxV, 70/30, age 30",
-            "HPV, 35% sc cov, 30% LTFU",
-            "HPV, 70% sc cov, 30% LTFU",
-        ],
-        filestem="_feb25",
+        scens=['Status quo', 
+               'Increase screening', 
+               'HPV FASTER, upper age 30',
+               'HPV FASTER, upper age 40',
+               'HPV FASTER, upper age 50',],
+        filestem="_june6",
+    )
+
+    plot_total_costs_dalys(
+        locations=locations,
+        scens=['Status quo', 
+               'Increase screening', 
+               'HPV FASTER, upper age 30',
+               'HPV FASTER, upper age 40',
+               'HPV FASTER, upper age 50',],
+        filestem="_june6",
     )
 
     plot_burden_redux(

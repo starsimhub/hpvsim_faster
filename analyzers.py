@@ -139,7 +139,7 @@ class econ_analyzer(hpv.Analyzer):
                 self.df["new_cancer_treatments"] += sim.get_intervention(
                     "radiation"
                 ).n_products_used.values[idx]
-            elif scenario_label == 'HPV FASTER':
+            elif 'HPV FASTER' in scenario_label:
                 # add in HPV FASTER resources
                 self.df["new_vaccinations"] += sim.get_intervention(
                     "HPV FASTER vx"
