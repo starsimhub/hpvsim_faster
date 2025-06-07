@@ -263,12 +263,28 @@ if __name__ == "__main__":
                         start_year=2026,
                         ltfu=0.1,
                     ),
-                    'HPV FASTER': dict(
+                    'HPV FASTER, upper age 50': dict(
                         primary=hpv_screen,
                         screen_coverage=0.7,
                         start_year=2026,
                         ltfu=0.1,
                         age_range=(22, 50),
+                        paired_px=True,
+                    ),
+                    'HPV FASTER, upper age 40': dict(
+                        primary=hpv_screen,
+                        screen_coverage=0.7,
+                        start_year=2026,
+                        ltfu=0.1,
+                        age_range=(22, 40),
+                        paired_px=True,
+                    ),
+                    'HPV FASTER, upper age 30': dict(
+                        primary=hpv_screen,
+                        screen_coverage=0.7,
+                        start_year=2026,
+                        ltfu=0.1,
+                        age_range=(22, 30),
                         paired_px=True,
                     )
                 }
@@ -283,8 +299,16 @@ if __name__ == "__main__":
                         screen_scen=screen_scens["70% coverage, 10% LTFU"],
                         vx_scen=vx_scen,
                     ),
-                    "HPV FASTER": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER'],
+                    "HPV FASTER, upper age 30": sc.objdict(
+                        screen_scen=screen_scens['HPV FASTER, upper age 30'],
+                        vx_scen=vx_scen,
+                    ),
+                    "HPV FASTER, upper age 40": sc.objdict(
+                        screen_scen=screen_scens['HPV FASTER, upper age 40'],
+                        vx_scen=vx_scen,
+                    ),
+                    "HPV FASTER, upper age 50": sc.objdict(
+                        screen_scen=screen_scens['HPV FASTER, upper age 50'],
                         vx_scen=vx_scen,
                     ),
                 }
