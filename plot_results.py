@@ -1574,8 +1574,7 @@ def plot_CEA_sens(
 
 def plot_CEA_v2(
     locations=None,
-    background_scens=None,
-    txvx_scens=None,
+    scens=None,
     filestem=None,
 ):
     ut.set_font(size=14)
@@ -1586,41 +1585,24 @@ def plot_CEA_v2(
         econdfs += econdf
 
     econ_df = pd.concat(econdfs)
-
-    handles = []
-    colors = ["orange", "red", "darkred"]
-    markers = ["s", "v", "P", "*", "D", "^", "x"]
+    
+    dalys = dict()
+    costs = dict()
+    colors= sc.gridcolors(10)
     fig, ax = pl.subplots(figsize=(10, 6))
-    for ib, (background_scen_label, background_scen) in enumerate(
-        background_scens.items()
-    ):
-        vx_scen_label = background_scen["vx_scen"]
-        screen_scen_label = background_scen["screen_scen"]
-        for it, txvx_scen in enumerate(txvx_scens):
-            if ib == 0 and "HPV" in txvx_scen:
-                pass
-            elif "HPV" in txvx_scen and txvx_scen[:-10] != screen_scen_label[:-10]:
-                pass
-            else:
-                dalys_noTxV = 0
-                dalys_TxV = 0
-                costs_noTxV = 0
-                costs_TxV = 0
-                for location in locations:
-                    econ_df_to_use = econ_df
-                    NoTxV = sc.dcp(
-                        econ_df_to_use[
-                            (econ_df_to_use.screen_scen == screen_scen_label)
-                            & (econ_df_to_use.vx_scen == vx_scen_label)
-                            & (econ_df_to_use.txvx_scen == "No TxV")
-                            & (econ_df_to_use.location == location)
+    for ib, background_scen_label in enumerate(scens):
+        daly = 0
+        cost = 0
+        for location in locations:
+            df = sc.dcp(
+                        econ_df[
+                            (econ_df.scenario == background_scen_label)
+                            & (econ_df.location == location)
                         ][
                             [
                                 "dalys",
-                                "new_poc_hpv_screens",
                                 "new_hpv_screens",
                                 "new_vaccinations",
-                                "new_tx_vaccinations",
                                 "new_thermal_ablations",
                                 "new_leeps",
                                 "new_cancer_treatments",
@@ -1628,103 +1610,52 @@ def plot_CEA_v2(
                         ]
                     )
 
-                    dalys_noTxV += NoTxV["dalys"]
-
-                    cost_noTxV = (
-                        np.sum(NoTxV["new_tx_vaccinations"] * cost_dict["txv"])
-                        + np.sum(NoTxV["new_hpv_screens"] * cost_dict["hpv"])
-                        + np.sum(NoTxV["new_poc_hpv_screens"] * cost_dict["poc_hpv"])
-                        + np.sum(NoTxV["new_leeps"] * cost_dict["leep"])
-                        + np.sum(NoTxV["new_thermal_ablations"] * cost_dict["ablation"])
-                        + np.sum(NoTxV["new_cancer_treatments"] * cost_dict["cancer"])
+            daly += df["dalys"]
+            cost += (np.sum(df["new_hpv_screens"] * cost_dict["hpv"])
+                        + np.sum(df["new_vaccinations"] * cost_dict["vx"])
+                        + np.sum(df["new_leeps"] * cost_dict["leep"])
+                        + np.sum(df["new_thermal_ablations"] * cost_dict["ablation"])
+                        + np.sum(df["new_cancer_treatments"] * cost_dict["cancer"])
                     )
-                    costs_noTxV += cost_noTxV
-
-                    if "HPV" in txvx_scen:
-                        screen_scen_label_to_use = sc.dcp(txvx_scen)
-                        txvx_scen_to_use = "No TxV"
-                        it = 2
-                    else:
-                        screen_scen_label_to_use = screen_scen_label
-                        txvx_scen_to_use = txvx_scen
-
-                    TxV = sc.dcp(
-                        econ_df_to_use[
-                            (econ_df_to_use.screen_scen == screen_scen_label_to_use)
-                            & (econ_df_to_use.vx_scen == vx_scen_label)
-                            & (econ_df_to_use.txvx_scen == txvx_scen_to_use)
-                            & (econ_df_to_use.location == location)
-                        ][
-                            [
-                                "dalys",
-                                "new_poc_hpv_screens",
-                                "new_hpv_screens",
-                                "new_vaccinations",
-                                "new_tx_vaccinations",
-                                "new_thermal_ablations",
-                                "new_leeps",
-                                "new_cancer_treatments",
-                            ]
-                        ]
-                    )
-
-                    dalys_TxV += TxV["dalys"]
-                    cost_TxV = (
-                        np.sum(1.8 * TxV["new_tx_vaccinations"] * cost_dict["txv"])
-                        # np.sum(TxV["new_tx_vaccinations"] * cost_dict["txv"])
-                        + np.sum(TxV["new_poc_hpv_screens"] * cost_dict["poc_hpv"])
-                        + np.sum(TxV["new_leeps"] * cost_dict["leep"])
-                        + np.sum(TxV["new_thermal_ablations"] * cost_dict["ablation"])
-                        + np.sum(TxV["new_cancer_treatments"] * cost_dict["cancer"])
-                    )
-                    costs_TxV += cost_TxV
-
-                dalys_averted = dalys_noTxV - dalys_TxV
-                additional_cost = costs_TxV - costs_noTxV
-                cost_daly_averted = additional_cost / dalys_averted
-                print(
-                    f"{background_scen_label}, {txvx_scen}, averts {int(dalys_averted[0])/1e6} million DALYs at cost/DALY averted: {cost_daly_averted[0]}"
-                )
-
-                # print(f"{background_scen_label}, No TxV, {NoTxV}")
-
-                # print(f"{background_scen_label}, {txvx_scen}, {TxV}")
-
-                (handle,) = ax.plot(
+            
+        dalys[background_scen_label] = daly
+        costs[background_scen_label] = cost
+    
+    
+    
+    # Convert dalys and cost dict to a DataFrame
+    dalys_df = pd.DataFrame.from_dict(dalys).T
+    dalys_df.columns=['dalys']
+    dalys_df['dalys averted'] = dalys_df.iloc[0].values - dalys_df['dalys'].values
+    # Convert costs dict to a DataFrame indexed by the same keys
+    # so that we can calculate additional costs
+    costs_df = pd.DataFrame.from_dict(costs, orient='index', columns=['cost'])
+    costs_df['additional costs'] = costs_df['cost'].values - costs_df.iloc[0].values 
+    
+    # combine the two DataFrames
+    combined_df = pd.concat([dalys_df, costs_df], axis=1)
+    combined_df['cost/daly averted'] = combined_df['additional costs'] / combined_df['dalys averted']
+    
+    # plot dalys averted vs cost/daly averted
+    for ib, background_scen_label in enumerate(scens):  # skip the first scenario
+        if ib == 0:
+            continue
+        else:
+            dalys_averted = combined_df.loc[background_scen_label, 'dalys averted']
+            cost_daly_averted = combined_df.loc[background_scen_label, 'cost/daly averted']
+            
+            ax.plot(
                     dalys_averted / 1e6,
                     cost_daly_averted,
                     color=colors[ib],
-                    marker=markers[it],
                     linestyle="None",
+                    marker='s',
                     markersize=15,
-                    # alpha=0.5,
                     markeredgecolor="black",
+                    label=background_scen_label,
                 )
-
-                handles.append(handle)
-
-    legend1 = ax.legend(
-        [handles[0], handles[2], handles[5]],
-        background_scens.keys(),
-        title="Screen coverage (50% LTFU)",
-        bbox_to_anchor=(0.3, -0.2),
-        # ncol=3,
-    )
-
-    ax.legend(
-        [handles[2], handles[3], handles[4]],
-        [
-            f"Option 3a: Mass TxV",
-            f"Option 3b: Test & vaccinate",
-            "Option 2a: POC HPV test (30% LTFU)",
-        ],
-        title="Product characteristic",
-        bbox_to_anchor=(1, -0.2),
-        # ncol=3,
-    )
-    ax.axhline(y=0, color="black", linewidth=0.5)
-    pl.gca().add_artist(legend1)
-    # ax.set_ylim(top=700)
+        
+    ax.legend()
     ax.set_xlabel("DALYs averted (millions), 2030-2060")
     ax.set_ylabel("Incremental costs/DALY averted,\n$USD 2030-2060")
     sc.SIticks(ax)
@@ -2825,296 +2756,15 @@ if __name__ == "__main__":
                'HPV FASTER, upper age 50',],
         filestem="_june6",
     )
-
-    plot_burden_redux(
-        locations=locations,
-        background_scen=[
-            "Vx, 70% cov, 9-14",
-            "HPV, 35% sc cov, 50% LTFU",
-        ],
-    )
-
+    
     plot_CEA_v2(
         locations=locations,
-        background_scens={
-            "None": {"vx_scen": "Vx, 70% cov, 9-14", "screen_scen": "No screening"},
-            "35%": {
-                "vx_scen": "Vx, 70% cov, 9-14",
-                "screen_scen": "HPV, 35% sc cov, 50% LTFU",
-            },
-            "70%": {
-                "vx_scen": "Vx, 70% cov, 9-14",
-                "screen_scen": "HPV, 70% sc cov, 50% LTFU",
-            },
-        },
-        txvx_scens=[
-            "Mass TxV, 90/50, age 30",
-            # "Mass TxV, 70/30, age 30",
-            "TnV TxV, 90/50, age 30",
-            # "TnV TxV, 70/30, age 30",
-            "HPV, 35% sc cov, 30% LTFU",
-            "HPV, 70% sc cov, 30% LTFU",
-        ],
-        filestem="_feb25",
+        scens=['Status quo', 
+               'Increase screening', 
+               'HPV FASTER, upper age 30',
+               'HPV FASTER, upper age 40',
+               'HPV FASTER, upper age 50',],
+        filestem="_june6",
     )
+    
 
-    plot_CEA_sens(
-        locations=locations,
-        background_scens={
-            # "None": {"vx_scen": "Vx, 70% cov, 9-14", "screen_scen": "No screening"},
-            "35%": {
-                "vx_scen": "Vx, 70% cov, 9-14",
-                "screen_scen": "HPV, 35% sc cov, 50% LTFU",
-            },
-            # "70%": {
-            #     "vx_scen": "Vx, 70% cov, 9-14",
-            #     "screen_scen": "HPV, 70% sc cov, 50% LTFU",
-            # },
-        },
-        txvx_scens=[
-            "Mass TxV, 90/50, age 30",
-            "Mass TxV, 70/30, age 30",
-            "Mass TxV, 90/50, age 30, intro 2030",
-            "Mass TxV, 90/50, age 30, intro 2038",
-            "Mass TxV, 90/50, age 30, no durable immunity",
-            "Mass TxV, 90/50, age 30, cross-protection",
-        ],
-        filestem="_feb25",
-    )
-
-    plot_CEA_sensv2(
-        locations=locations,
-        background_scens={
-            # "None": {"vx_scen": "Vx, 70% cov, 9-14", "screen_scen": "No screening"},
-            "35%": {
-                "vx_scen": "Vx, 70% cov, 9-14",
-                "screen_scen": "HPV, 35% sc cov, 50% LTFU",
-            },
-            # "70%": {
-            #     "vx_scen": "Vx, 70% cov, 9-14",
-            #     "screen_scen": "HPV, 70% sc cov, 50% LTFU",
-            # },
-        },
-        txvx_scens=[
-            "Mass TxV, 90/50, age 30",
-            "Mass TxV, 70/30, age 30",
-            "Mass TxV, 90/50, age 30, intro 2030",
-            "Mass TxV, 90/50, age 30, intro 2038",
-            "Mass TxV, 90/50, age 30, no durable immunity",
-            "Mass TxV, 90/50, age 30, cross-protection",
-            "HPV, 35% sc cov, 30% LTFU",
-        ],
-        filestem="_feb25",
-    )
-
-    # plot_CEA_tnv(
-    #     locations=locations,
-    #     background_scens={
-    #         "None": {"vx_scen": "Vx, 70% cov, 9-14", "screen_scen": "No screening"},
-    #         "35%": {
-    #             "vx_scen": "Vx, 70% cov, 9-14",
-    #             "screen_scen": "HPV, 35% sc cov, 50% LTFU",
-    #         },
-    #         "70%": {
-    #             "vx_scen": "Vx, 70% cov, 9-14",
-    #             "screen_scen": "HPV, 70% sc cov, 50% LTFU",
-    #         },
-    #     },
-    #     txvx_scens=[
-    #         "Mass TxV, 90/50, age 30",
-    #         "Mass TxV, 70/30, age 30",
-    #         # "Mass TxV, 90/50, age 30, intro 2035",
-    #         "TnV TxV, 90/50, age 30",
-    #         "TnV TxV, 70/30, age 30",
-    #         "HPV, 35% sc cov, 30% LTFU",
-    #         "HPV, 70% sc cov, 30% LTFU",
-    #     ],
-    #     filestem="_feb23",
-    # )
-
-
-
-    # plot_fig1(
-    #     locations=locations,
-    #     scens={
-    #         "70-0-0": ["Vx, 70% cov, 9-14", "No screening"],
-    #         "70-35-50": ["Vx, 70% cov, 9-14", "HPV, 35% sc cov, 50% LTFU"],
-    #         "70-35-70": ["Vx, 70% cov, 9-14", "HPV, 35% sc cov, 30% LTFU"],
-    #         "70-70-50": ["Vx, 70% cov, 9-14", "HPV, 70% sc cov, 50% LTFU"],
-    #         "70-70-70": ["Vx, 70% cov, 9-14", "HPV, 70% sc cov, 30% LTFU"],
-    #     },
-    #     txv_scens={
-    #         "No TxV": "No TxV",
-    #         "90/50 TxV, 20% cov": "Mass TxV, 90/50, age 30, 20 cov",
-    #         "90/50 TxV, 50% cov": "Mass TxV, 90/50, age 30, 50 cov",
-    #         "90/50 TxV, 70% cov": "Mass TxV, 90/50, age 30",
-    #     },
-    #     filestem="_feb23",
-    # )
-
-    plot_age_causal(
-        locations=["nigeria", "india"],
-        scens={
-            "70-0-0": ["Vx, 70% cov, 9-14", "No screening"],
-            "70-35-50": ["Vx, 70% cov, 9-14", "HPV, 35% sc cov, 50% LTFU"],
-            "70-70-50": ["Vx, 70% cov, 9-14", "HPV, 70% sc cov, 50% LTFU"],
-            # "70-35-70": ["Vx, 70% cov, 9-14", "HPV, 35% sc cov, 30% LTFU"],
-            # "70-70-70": ["Vx, 70% cov, 9-14", "HPV, 70% sc cov, 30% LTFU"],
-        },
-        txv_scens={
-            "No TxV": "No TxV",
-            "90/30 TxV, age 30": "Mass TxV, 90/50, age 30",
-            "90/50 TxV, age 35": "Mass TxV, 90/50, age 35",
-            "90/50 TxV, age 40": "Mass TxV, 90/50, age 40",
-        },
-        filestem="_feb25",
-    )
-
-    plot_fig2(
-        locations=locations,
-        background_scen={"vx_scen": "Vx, 70% cov, 9-14", "screen_scen": "No screening"},
-        txvx_efficacy="90/50",
-        txvx_ages=["30", "35", "40"],
-        sensitivities=[
-            ", no durable immunity",
-            ", intro 2038",
-            "70/30",
-            ", cross-protection",
-        ],
-        filestem="_feb25",
-    )
-
-    # plot_fig2_PDVAC(
-    #     locations=locations,
-    #     background_scen={'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'No screening'},
-    #     txvx_efficacy='90/50',
-    #     txvx_age='30',
-    #     sensitivities=[', cross-protection',
-    #                    ', intro 2035',
-    #                    ', no durable immunity',
-    #                    '70/30',
-    #                    'TnV TxV, 90/50'
-    #                    ],
-    #     filestem='_nov27'
-    # )
-
-    # plot_tnv_sens(
-    #     locations=locations,
-    #     background_scen={"vx_scen": "Vx, 70% cov, 9-14", "screen_scen": "No screening"},
-    #     txvx_age="30",
-    #     txvx_efficacies=[
-    #         "90/50",
-    #         #    '50/50',
-    #         "70/30",
-    #         #    '90/0',
-    #     ],
-    #     filestem="_feb22",
-    # )
-
-    # plot_CEA(
-    #     locations=locations,
-    #     background_scens={
-
-    #             '90-0-0': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'No screening'},
-    #             '90-35-70': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'HPV, 35% sc cov'},
-    #             '90-70-90': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'HPV, 70% sc cov, 90% tx cov'},
-    #         },
-
-    #     txvx_scens=[
-    #             'Mass TxV, 90/50, age 30',
-    #             'Mass TxV, 70/30, age 30',
-    #             'Mass TxV, 90/50, age 30, intro 2035',
-    #             'Mass TxV, 90/50, age 30, cross-protection',
-    #             'Mass TxV, 90/50, age 30, no durable immunity',
-    #             'TnV TxV, 90/50, age 30',
-    #             'TnV TxV, 70/30, age 30',
-
-    #         ],
-    #     filestem='_nov27'
-
-    # )
-
-    # plot_CEA_PDVAC(
-    #     locations=locations,
-    #     background_scens={
-
-    #             '90-0-0': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'No screening'},
-    #             # '90-35-70': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'HPV, 35% sc cov'},
-    #             '90-70-90': {'vx_scen': 'Vx, 90% cov, 9-14', 'screen_scen': 'HPV, 70% sc cov, 90% tx cov'},
-    #         },
-
-    #     txvx_scens=[
-    #             'Mass TxV, 90/50, age 30',
-    #             # 'Mass TxV, 70/30, age 30',
-    #             # 'Mass TxV, 90/50, age 30, intro 2035',
-    #             'TnV TxV, 90/50, age 30',
-    #             # 'TnV TxV, 70/30, age 30',
-
-    #         ],
-
-    #     hpv_test_cost_range = [5,10,15,20],
-    #     filestem='_nov27'
-
-    #     )
-
-    # plot_CEA_DEG(
-    #     locations=locations,
-    #     background_scens={
-    #         # "90-0-0": {"vx_scen": "Vx, 90% cov, 9-14", "screen_scen": "No screening"},
-    #         "90-35-70": {
-    #             "vx_scen": "Vx, 90% cov, 9-14",
-    #             "screen_scen": "HPV, 35% sc cov",
-    #         },
-    #         "90-70-90": {
-    #             "vx_scen": "Vx, 90% cov, 9-14",
-    #             "screen_scen": "HPV, 70% sc cov, 90% tx cov",
-    #         },
-    #     },
-    #     txvx_scens=[
-    #         "Mass TxV, 90/50, age 30",
-    #         # 'Mass TxV, 70/30, age 30',
-    #         # 'Mass TxV, 90/50, age 30, intro 2035',
-    #         "TnV TxV, 90/50, age 30",
-    #         # 'TnV TxV, 70/30, age 30',
-    #     ],
-    #     hpv_test_cost_range=[5, 10, 15, 20],
-    #     filestem="_nov27",
-    # )
-
-    # plot_CEA_SnT(
-    #     locations=locations,
-    #     background_scens={
-    #         "70-0-0": {"vx_scen": "Vx, 70% cov, 9-14", "screen_scen": "No screening"},
-    #         "70-35-70": {
-    #             "vx_scen": "Vx, 70% cov, 9-14",
-    #             "screen_scen": "HPV, 35% sc cov",
-    #         },
-    #         "70-70-90": {
-    #             "vx_scen": "Vx, 70% cov, 9-14",
-    #             "screen_scen": "HPV, 70% sc cov, 90% tx cov",
-    #         },
-    #     },
-    #     txvx_scens=[
-    #         "No TxV",
-    #         # "Mass TxV, 90/50, age 30",
-    #         # "TnV TxV, 90/50, age 30",
-    #     ],
-    #     filestem="_feb21",
-    # )
-
-    plot_residual_burden_combined(
-        locations=locations,
-        scens={
-            # "50% PxV, 0% S&T": ["Vx, 50% cov, 9-14", "No screening"],
-            "70% PxV, 0% S&T": ["Vx, 70% cov, 9-14", "No screening"],
-            "70% PxV, 35% Sc, 50% LTFU": [
-                "Vx, 70% cov, 9-14",
-                "HPV, 35% sc cov, 50% LTFU",
-            ],
-            "70% PxV, 70% Sc, 50% LTFU": [
-                "Vx, 70% cov, 9-14",
-                "HPV, 70% sc cov, 50% LTFU",
-            ],
-        },
-        filestem="_feb25",
-    )
