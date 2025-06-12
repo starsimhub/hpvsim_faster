@@ -263,7 +263,19 @@ if __name__ == "__main__":
                         start_year=2026,
                         ltfu=0.1,
                     ),
-                    'HPV FASTER, upper age 50, 70% coverage, 10% LTFU': dict(
+                    "30% coverage, 10% LTFU": dict(
+                        primary=hpv_screen,
+                        screen_coverage=0.3,
+                        start_year=2026,
+                        ltfu=0.1,
+                    ),
+                    "50% coverage, 10% LTFU": dict(
+                        primary=hpv_screen,
+                        screen_coverage=0.5,
+                        start_year=2026,
+                        ltfu=0.1,
+                    ),
+                    'HPV FASTER, 22-50, 70% coverage, 10% LTFU': dict(
                         primary=hpv_screen,
                         screen_coverage=0.7,
                         start_year=2026,
@@ -271,7 +283,7 @@ if __name__ == "__main__":
                         age_range=(22, 50),
                         paired_px=True,
                     ),
-                    'HPV FASTER, upper age 50, 70% coverage, 1% LTFU': dict(
+                    'HPV FASTER, 22-50, 70% coverage, 1% LTFU': dict(
                         primary=hpv_screen,
                         screen_coverage=0.7,
                         start_year=2026,
@@ -279,7 +291,7 @@ if __name__ == "__main__":
                         age_range=(22, 50),
                         paired_px=True,
                     ),
-                    'HPV FASTER, upper age 50, 70% coverage, 30% LTFU': dict(
+                    'HPV FASTER, 22-50, 70% coverage, 30% LTFU': dict(
                         primary=hpv_screen,
                         screen_coverage=0.7,
                         start_year=2026,
@@ -287,7 +299,7 @@ if __name__ == "__main__":
                         age_range=(22, 50),
                         paired_px=True,
                     ),
-                    'HPV FASTER, upper age 50, 50% coverage, 10% LTFU': dict(
+                    'HPV FASTER, 22-50, 50% coverage, 10% LTFU': dict(
                         primary=hpv_screen,
                         screen_coverage=0.5,
                         start_year=2026,
@@ -295,7 +307,7 @@ if __name__ == "__main__":
                         age_range=(22, 50),
                         paired_px=True,
                     ),
-                    'HPV FASTER, upper age 50, 50% coverage, 1% LTFU': dict(
+                    'HPV FASTER, 22-50, 50% coverage, 1% LTFU': dict(
                         primary=hpv_screen,
                         screen_coverage=0.5,
                         start_year=2026,
@@ -303,7 +315,7 @@ if __name__ == "__main__":
                         age_range=(22, 50),
                         paired_px=True,
                     ),
-                    'HPV FASTER, upper age 50, 50% coverage, 30% LTFU': dict(
+                    'HPV FASTER, 22-50, 50% coverage, 30% LTFU': dict(
                         primary=hpv_screen,
                         screen_coverage=0.5,
                         start_year=2026,
@@ -336,8 +348,16 @@ if __name__ == "__main__":
                         screen_scen=screen_scens["No screening"],
                         vx_scen=vx_scen,
                     ),
-                    "Increase screening": sc.objdict(
+                    "90-70-90": sc.objdict(
                         screen_scen=screen_scens["70% coverage, 10% LTFU"],
+                        vx_scen=vx_scen,
+                    ),
+                    "90-50-90": sc.objdict(
+                        screen_scen=screen_scens["50% coverage, 10% LTFU"],
+                        vx_scen=vx_scen,
+                    ),
+                    "90-30-90": sc.objdict(
+                        screen_scen=screen_scens["30% coverage, 10% LTFU"],
                         vx_scen=vx_scen,
                     ),
                     # "HPV FASTER, upper age 30": sc.objdict(
@@ -348,28 +368,28 @@ if __name__ == "__main__":
                     #     screen_scen=screen_scens['HPV FASTER, upper age 40'],
                     #     vx_scen=vx_scen,
                     # ),
-                    "HPV FASTER, upper age 50, 70% coverage, 10% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, upper age 50, 70% coverage, 10% LTFU'],
+                    "HPV FASTER, 22-50, 70% coverage, 10% LTFU": sc.objdict(
+                        screen_scen=screen_scens['HPV FASTER, 22-50, 70% coverage, 10% LTFU'],
                         vx_scen=vx_scen,
                     ),
-                    "HPV FASTER, upper age 50, 70% coverage, 1% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, upper age 50, 70% coverage, 1% LTFU'],
+                    # "HPV FASTER, 22-50, 70% coverage, 1% LTFU": sc.objdict(
+                    #     screen_scen=screen_scens['HPV FASTER, 22-50, 70% coverage, 1% LTFU'],
+                    #     vx_scen=vx_scen,
+                    # ),
+                    "HPV FASTER, 22-50, 70% coverage, 30% LTFU": sc.objdict(
+                        screen_scen=screen_scens['HPV FASTER, 22-50, 70% coverage, 30% LTFU'],
                         vx_scen=vx_scen,
                     ),
-                    "HPV FASTER, upper age 50, 70% coverage, 30% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, upper age 50, 70% coverage, 30% LTFU'],
+                    "HPV FASTER, 22-50, 50% coverage, 10% LTFU": sc.objdict(
+                        screen_scen=screen_scens['HPV FASTER, 22-50, 50% coverage, 10% LTFU'],
                         vx_scen=vx_scen,
                     ),
-                    "HPV FASTER, upper age 50, 50% coverage, 10% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, upper age 50, 50% coverage, 10% LTFU'],
-                        vx_scen=vx_scen,
-                    ),
-                    "HPV FASTER, upper age 50, 50% coverage, 1% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, upper age 50, 50% coverage, 1% LTFU'],
-                        vx_scen=vx_scen,
-                    ),
-                    "HPV FASTER, upper age 50, 50% coverage, 30% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, upper age 50, 50% coverage, 30% LTFU'],
+                    # "HPV FASTER, 22-50, 50% coverage, 1% LTFU": sc.objdict(
+                    #     screen_scen=screen_scens['HPV FASTER, 22-50, 50% coverage, 1% LTFU'],
+                    #     vx_scen=vx_scen,
+                    # ),
+                    "HPV FASTER, 22-50, 50% coverage, 30% LTFU": sc.objdict(
+                        screen_scen=screen_scens['HPV FASTER, 22-50, 50% coverage, 30% LTFU'],
                         vx_scen=vx_scen,
                     ),
 
@@ -381,6 +401,6 @@ if __name__ == "__main__":
                 location=location,
                 debug=debug,
                 calib_filestem=calib_filestem,
-                filestem="_june11",
+                filestem="_june12",
             )
 
