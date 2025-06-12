@@ -126,7 +126,7 @@ class econ_analyzer(hpv.Analyzer):
             self.df["new_vaccinations"] += sim.get_intervention(
                     "Catchup vx"
                 ).n_products_used.values[idx]
-            if "screening" in sim.interventions:
+            if scenario_label != 'Status quo':
                 self.df["new_hpv_screens"] += sim.get_intervention(
                             "screening"
                         ).n_products_used.values[idx]
