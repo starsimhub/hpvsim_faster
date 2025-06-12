@@ -271,6 +271,22 @@ if __name__ == "__main__":
                         age_range=(22, 50),
                         paired_px=True,
                     ),
+                    'HPV FASTER, upper age 50, 1% LTFU': dict(
+                        primary=hpv_screen,
+                        screen_coverage=0.7,
+                        start_year=2026,
+                        ltfu=0.01,
+                        age_range=(22, 50),
+                        paired_px=True,
+                    ),
+                    'HPV FASTER, upper age 50, 30% LTFU': dict(
+                        primary=hpv_screen,
+                        screen_coverage=0.7,
+                        start_year=2026,
+                        ltfu=0.3,
+                        age_range=(22, 50),
+                        paired_px=True,
+                    ),
                     'HPV FASTER, upper age 40': dict(
                         primary=hpv_screen,
                         screen_coverage=0.7,
@@ -311,6 +327,15 @@ if __name__ == "__main__":
                         screen_scen=screen_scens['HPV FASTER, upper age 50'],
                         vx_scen=vx_scen,
                     ),
+                    "HPV FASTER, upper age 50, 1% LTFU": sc.objdict(
+                        screen_scen=screen_scens['HPV FASTER, upper age 50, 1% LTFU'],
+                        vx_scen=vx_scen,
+                    ),
+                    "HPV FASTER, upper age 50, 30% LTFU": sc.objdict(
+                        screen_scen=screen_scens['HPV FASTER, upper age 50, 30% LTFU'],
+                        vx_scen=vx_scen,
+                    ),
+
                 }
             )
             
@@ -319,6 +344,6 @@ if __name__ == "__main__":
                 location=location,
                 debug=debug,
                 calib_filestem=calib_filestem,
-                filestem="_june6",
+                filestem="_june11",
             )
 
