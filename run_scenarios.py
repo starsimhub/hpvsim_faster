@@ -382,5 +382,6 @@ if __name__ == "__main__":
                 debug=debug,
                 calib_filestem=calib_filestem,
                 filestem="_june11",
+                filestem="_june11",
             )
 
