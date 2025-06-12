@@ -126,37 +126,24 @@ class econ_analyzer(hpv.Analyzer):
             self.df["new_vaccinations"] += sim.get_intervention(
                     "Catchup vx"
                 ).n_products_used.values[idx]
-            if scenario_label == 'Increase screening':
+            if "screening" in sim.interventions:
                 self.df["new_hpv_screens"] += sim.get_intervention(
-                        "screening"
-                    ).n_products_used.values[idx]
+                            "screening"
+                        ).n_products_used.values[idx]
                 self.df["new_thermal_ablations"] += sim.get_intervention(
-                    "ablation"
-                ).n_products_used.values[idx]
+                        "ablation"
+                    ).n_products_used.values[idx]
                 self.df["new_leeps"] += sim.get_intervention(
-                    "excision"
-                ).n_products_used.values[idx]
+                        "excision"
+                    ).n_products_used.values[idx]
                 self.df["new_cancer_treatments"] += sim.get_intervention(
-                    "radiation"
-                ).n_products_used.values[idx]
-            elif 'HPV FASTER' in scenario_label:
+                        "radiation"
+                    ).n_products_used.values[idx]
+            if 'HPV FASTER' in scenario_label:
                 # add in HPV FASTER resources
                 self.df["new_vaccinations"] += sim.get_intervention(
                     "HPV FASTER vx"
                 ).n_products_used.values[idx]
-                self.df["new_hpv_screens"] += sim.get_intervention(
-                        "screening"
-                    ).n_products_used.values[idx]
-                self.df["new_thermal_ablations"] += sim.get_intervention(
-                    "ablation"
-                ).n_products_used.values[idx]
-                self.df["new_leeps"] += sim.get_intervention(
-                    "excision"
-                ).n_products_used.values[idx]
-                self.df["new_cancer_treatments"] += sim.get_intervention(
-                    "radiation"
-                ).n_products_used.values[idx]
-
  
 
         return
