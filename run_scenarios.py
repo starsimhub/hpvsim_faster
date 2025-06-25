@@ -331,7 +331,56 @@ if __name__ == "__main__":
                         paired_px=True,
                     ),
                     
-                    'HPV FASTER, upper age 40': dict(
+                    'HPV FASTER, 22-30, 70% coverage, 10% LTFU': dict(
+                        primary=hpv_screen,
+                        screen_coverage=0.7,
+                        start_year=2026,
+                        ltfu=0.1,
+                        age_range=(22, 30),
+                        paired_px=True,
+                    ),
+                    'HPV FASTER, 22-30, 70% coverage, 1% LTFU': dict(
+                        primary=hpv_screen,
+                        screen_coverage=0.7,
+                        start_year=2026,
+                        ltfu=0.01,
+                        age_range=(22, 30),
+                        paired_px=True,
+                    ),
+                    'HPV FASTER, 22-30, 70% coverage, 30% LTFU': dict(
+                        primary=hpv_screen,
+                        screen_coverage=0.7,
+                        start_year=2026,
+                        ltfu=0.3,
+                        age_range=(22, 30),
+                        paired_px=True,
+                    ),
+                    'HPV FASTER, 22-30, 50% coverage, 10% LTFU': dict(
+                        primary=hpv_screen,
+                        screen_coverage=0.5,
+                        start_year=2026,
+                        ltfu=0.1,
+                        age_range=(22, 30),
+                        paired_px=True,
+                    ),
+                    'HPV FASTER, 22-30, 50% coverage, 1% LTFU': dict(
+                        primary=hpv_screen,
+                        screen_coverage=0.5,
+                        start_year=2026,
+                        ltfu=0.01,
+                        age_range=(22, 30),
+                        paired_px=True,
+                    ),
+                    'HPV FASTER, 22-30, 50% coverage, 30% LTFU': dict(
+                        primary=hpv_screen,
+                        screen_coverage=0.5,
+                        start_year=2026,
+                        ltfu=0.3,
+                        age_range=(22, 30),
+                        paired_px=True,
+                    ),
+                    
+                    'HPV FASTER, 22-40, 70% coverage, 10% LTFU': dict(
                         primary=hpv_screen,
                         screen_coverage=0.7,
                         start_year=2026,
@@ -339,14 +388,47 @@ if __name__ == "__main__":
                         age_range=(22, 40),
                         paired_px=True,
                     ),
-                    'HPV FASTER, upper age 30': dict(
+                    'HPV FASTER, 22-40, 70% coverage, 1% LTFU': dict(
                         primary=hpv_screen,
                         screen_coverage=0.7,
                         start_year=2026,
-                        ltfu=0.1,
-                        age_range=(22, 30),
+                        ltfu=0.01,
+                        age_range=(22, 40),
                         paired_px=True,
-                    )
+                    ),
+                    'HPV FASTER, 22-40, 70% coverage, 30% LTFU': dict(
+                        primary=hpv_screen,
+                        screen_coverage=0.7,
+                        start_year=2026,
+                        ltfu=0.3,
+                        age_range=(22, 40),
+                        paired_px=True,
+                    ),
+                    'HPV FASTER, 22-40, 50% coverage, 10% LTFU': dict(
+                        primary=hpv_screen,
+                        screen_coverage=0.5,
+                        start_year=2026,
+                        ltfu=0.1,
+                        age_range=(22, 40),
+                        paired_px=True,
+                    ),
+                    'HPV FASTER, 22-40, 50% coverage, 1% LTFU': dict(
+                        primary=hpv_screen,
+                        screen_coverage=0.5,
+                        start_year=2026,
+                        ltfu=0.01,
+                        age_range=(22, 40),
+                        paired_px=True,
+                    ),
+                    'HPV FASTER, 22-40, 50% coverage, 30% LTFU': dict(
+                        primary=hpv_screen,
+                        screen_coverage=0.5,
+                        start_year=2026,
+                        ltfu=0.3,
+                        age_range=(22, 40),
+                        paired_px=True,
+                    ),
+                    
                 }
             )
             scenarios = sc.objdict(
