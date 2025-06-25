@@ -413,6 +413,6 @@ if __name__ == "__main__":
                 location=location,
                 debug=debug,
                 calib_filestem=calib_filestem,
-                filestem="_june12",
+                filestem="_june25",
             )
 
