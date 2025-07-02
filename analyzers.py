@@ -188,7 +188,7 @@ class segmented_results(hpv.Analyzer):
             self.cohort_to_follow = females_to_follow
 
         if sim.yearvec[sim.t] >= self.intv_start:
-            
+            ppl = sim.people
             li = np.floor(sim.yearvec[sim.t])
 
             # Get new people with cancer and add to the dataframe
