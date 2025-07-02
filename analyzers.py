@@ -148,4 +148,53 @@ class econ_analyzer(hpv.Analyzer):
  
 
         return
+    
+
+class segmented_results(hpv.Analyzer):
+    """
+    Analyzer for producing segmented results for women reached by interventions.
+    """
+
+    def __init__(self, intv_start=2028, intv_age=[22,50], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.intv_start = intv_start
+        self.intv_age = intv_age
+        self.df = pd.DataFrame()
+        return
+        
+        
+    def initialize(self, sim):
+        super().initialize(sim)
+        columns = [
+            "new_cancers",
+            "year"
+        ]
+        # Initialize the dataframe with columns for results
+        self.df = pd.DataFrame(columns=columns)
+        self.df['year'] = sim.res_yearvec
+        self.df['new_cancers'] = 0  # Initialize new_cancers to zero
+
+        return
+    
+    def apply(self, sim):
+        
+        # On each timestep, check if any new women have received HPV FASTER
+        
+        if sim.yearvec[sim.t] == self.intv_start:
+            # Find inds to follow
+            ppl = sim.people
+            females_in_age = ppl.age >= self.intv_age[0] & ppl.age <= self.intv_age[1] & ppl.female
+            females_to_follow = hpv.true(females_in_age)
+            self.cohort_to_follow = females_to_follow
+
+        if sim.yearvec[sim.t] >= self.intv_start:
+            
+            li = np.floor(sim.yearvec[sim.t])
+
+            # Get new people with cancer and add to the dataframe
+            new_cancers = ppl.date_cancerous[self.cohort_to_follow] == sim.t
+            n_new_cancers = np.count_nonzero(new_cancers)
+            self.df.loc[self.df['year'] == li, 'new_cancers'] += n_new_cancers
+
+        return
 
