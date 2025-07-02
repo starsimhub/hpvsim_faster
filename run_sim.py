@@ -86,8 +86,9 @@ def make_sim(
     if analyzers is None:
         analyzers = sc.autolist()
     if econ_analyzer:
-        analyzers += an.dalys(start=2020)
-        analyzers += an.econ_analyzer()
+        analyzers += [an.dalys(start=2020)]
+        analyzers += [an.econ_analyzer()]
+        
 
     interventions = sc.autolist()
     if vx_intv is not None and len(vx_intv):
@@ -112,7 +113,6 @@ def make_sim(
 def run_sim(
     location=None,
     screen_intv=None,
-    txvx_intv=None,
     vx_intv=None,
     analyzers=None,
     debug=0,
