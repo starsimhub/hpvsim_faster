@@ -9,15 +9,23 @@ import hpvsim as hpv
 
 
 def get_vx_intvs(
-    start_year=2025, vx_coverage=0.9, age_range=(9, 14), product="nonavalent"
+    start_year=2025, year_cov_reached=2035, 
+    vx_coverage=0.9, age_range=(9, 14), product="nonavalent"
 ):
 
     catchup_age = (age_range[0] + 1, age_range[1])
     routine_age = (age_range[0], age_range[0] + 1)
     prod = hpv.default_vx(prod_name=product)
+    
+    vx_eligible = lambda sim: np.isnan(sim.people.date_vaccinated)
+    
+    # Create a list of values linearly increasing from 0 in start_year to vx_coverage in year_cov_reached and then staying constant
+    vx_coverage_values_campaign = np.linspace(0.25, vx_coverage, year_cov_reached - start_year + 1)
+    vx_coverage_values_routine = np.append(vx_coverage_values_campaign, [vx_coverage] * (2060 - year_cov_reached + 1))
+    campaign_years = np.arange(start_year, year_cov_reached)
 
     routine_vx = hpv.routine_vx(
-        prob=vx_coverage,
+        prob=vx_coverage_values_routine,
         start_year=start_year,
         product=prod,
         age_range=routine_age,
@@ -25,9 +33,10 @@ def get_vx_intvs(
     )
 
     catchup_vx = hpv.campaign_vx(
-        prob=vx_coverage,
-        years=start_year,
+        prob=vx_coverage_values_campaign,
+        years=campaign_years,
         product=prod,
+        eligibility=vx_eligible,
         age_range=catchup_age,
         label="Catchup vx",
     )
@@ -37,6 +46,7 @@ def get_vx_intvs(
 
 def get_screen_intvs(
     primary=None, triage=None, screen_coverage=0.7, ltfu=0.3, start_year=2025,
+    year_cov_reached=2030,
     age_range=(30, 50), paired_px=False
 ):
     """

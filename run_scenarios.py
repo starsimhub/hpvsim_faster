@@ -441,18 +441,18 @@ if __name__ == "__main__":
                     #     screen_scen=screen_scens["No screening"],
                     #     vx_scen=vx_scen["50% coverage"],
                     # ),
-                    "90-70-90": sc.objdict(
-                        screen_scen=screen_scens["70% coverage, 10% LTFU"],
-                        vx_scen=vx_scen["90% coverage"],
-                    ),
-                    "90-50-90": sc.objdict(
-                        screen_scen=screen_scens["50% coverage, 10% LTFU"],
-                        vx_scen=vx_scen["90% coverage"],
-                    ),
-                    "90-30-90": sc.objdict(
-                        screen_scen=screen_scens["30% coverage, 10% LTFU"],
-                        vx_scen=vx_scen["90% coverage"],
-                    ),
+                    # "90-70-90": sc.objdict(
+                    #     screen_scen=screen_scens["70% coverage, 10% LTFU"],
+                    #     vx_scen=vx_scen["90% coverage"],
+                    # ),
+                    # "90-50-90": sc.objdict(
+                    #     screen_scen=screen_scens["50% coverage, 10% LTFU"],
+                    #     vx_scen=vx_scen["90% coverage"],
+                    # ),
+                    # "90-30-90": sc.objdict(
+                    #     screen_scen=screen_scens["30% coverage, 10% LTFU"],
+                    #     vx_scen=vx_scen["90% coverage"],
+                    # ),
                     # "50-50-90": sc.objdict(
                     #     screen_scen=screen_scens["50% coverage, 10% LTFU"],
                     #     vx_scen=vx_scen["50% coverage"],
@@ -462,22 +462,22 @@ if __name__ == "__main__":
                     #     vx_scen=vx_scen["50% coverage"],
                     # ),
         
-                    "HPV FASTER, 22-50, 70% coverage, 10% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, 22-50, 70% coverage, 10% LTFU'],
-                        vx_scen=vx_scen["90% coverage"],
-                    ),
-                    "HPV FASTER, 22-50, 70% coverage, 30% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, 22-50, 70% coverage, 30% LTFU'],
-                        vx_scen=vx_scen["90% coverage"],
-                    ),
-                    "HPV FASTER, 22-50, 50% coverage, 10% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, 22-50, 50% coverage, 10% LTFU'],
-                        vx_scen=vx_scen["90% coverage"],
-                    ),
-                    "HPV FASTER, 22-50, 50% coverage, 30% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, 22-50, 50% coverage, 30% LTFU'],
-                        vx_scen=vx_scen["90% coverage"],
-                    ),
+                    # "HPV FASTER, 22-50, 70% coverage, 10% LTFU": sc.objdict(
+                    #     screen_scen=screen_scens['HPV FASTER, 22-50, 70% coverage, 10% LTFU'],
+                    #     vx_scen=vx_scen["90% coverage"],
+                    # ),
+                    # "HPV FASTER, 22-50, 70% coverage, 30% LTFU": sc.objdict(
+                    #     screen_scen=screen_scens['HPV FASTER, 22-50, 70% coverage, 30% LTFU'],
+                    #     vx_scen=vx_scen["90% coverage"],
+                    # ),
+                    # "HPV FASTER, 22-50, 50% coverage, 10% LTFU": sc.objdict(
+                    #     screen_scen=screen_scens['HPV FASTER, 22-50, 50% coverage, 10% LTFU'],
+                    #     vx_scen=vx_scen["90% coverage"],
+                    # ),
+                    # "HPV FASTER, 22-50, 50% coverage, 30% LTFU": sc.objdict(
+                    #     screen_scen=screen_scens['HPV FASTER, 22-50, 50% coverage, 30% LTFU'],
+                    #     vx_scen=vx_scen["90% coverage"],
+                    # ),
                     # "50% PxV, HPV FASTER, 22-50, 50% coverage, 10% LTFU": sc.objdict(
                     #     screen_scen=screen_scens['HPV FASTER, 22-50, 50% coverage, 10% LTFU'],
                     #     vx_scen=vx_scen["50% coverage"],
@@ -487,22 +487,22 @@ if __name__ == "__main__":
                     #     vx_scen=vx_scen["50% coverage"],
                     # ),
 
-                    "HPV FASTER, 22-40, 70% coverage, 10% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, 22-40, 70% coverage, 10% LTFU'],
-                        vx_scen=vx_scen["90% coverage"],
-                    ),
-                    "HPV FASTER, 22-40, 70% coverage, 30% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, 22-40, 70% coverage, 30% LTFU'],
-                        vx_scen=vx_scen["90% coverage"],
-                    ),
-                    "HPV FASTER, 22-40, 50% coverage, 10% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, 22-40, 50% coverage, 10% LTFU'],
-                        vx_scen=vx_scen["90% coverage"],
-                    ),
-                    "HPV FASTER, 22-40, 50% coverage, 30% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, 22-40, 50% coverage, 30% LTFU'],
-                        vx_scen=vx_scen["90% coverage"],
-                    ),
+                    # "HPV FASTER, 22-40, 70% coverage, 10% LTFU": sc.objdict(
+                    #     screen_scen=screen_scens['HPV FASTER, 22-40, 70% coverage, 10% LTFU'],
+                    #     vx_scen=vx_scen["90% coverage"],
+                    # ),
+                    # "HPV FASTER, 22-40, 70% coverage, 30% LTFU": sc.objdict(
+                    #     screen_scen=screen_scens['HPV FASTER, 22-40, 70% coverage, 30% LTFU'],
+                    #     vx_scen=vx_scen["90% coverage"],
+                    # ),
+                    # "HPV FASTER, 22-40, 50% coverage, 10% LTFU": sc.objdict(
+                    #     screen_scen=screen_scens['HPV FASTER, 22-40, 50% coverage, 10% LTFU'],
+                    #     vx_scen=vx_scen["90% coverage"],
+                    # ),
+                    # "HPV FASTER, 22-40, 50% coverage, 30% LTFU": sc.objdict(
+                    #     screen_scen=screen_scens['HPV FASTER, 22-40, 50% coverage, 30% LTFU'],
+                    #     vx_scen=vx_scen["90% coverage"],
+                    # ),
                     # "50% PxV, HPV FASTER, 22-40, 50% coverage, 10% LTFU": sc.objdict(
                     #     screen_scen=screen_scens['HPV FASTER, 22-40, 50% coverage, 10% LTFU'],
                     #     vx_scen=vx_scen["50% coverage"],
@@ -512,22 +512,22 @@ if __name__ == "__main__":
                     #     vx_scen=vx_scen["50% coverage"],
                     # ),
                     
-                    "HPV FASTER, 22-30, 70% coverage, 10% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, 22-30, 70% coverage, 10% LTFU'],
-                        vx_scen=vx_scen["90% coverage"],
-                    ),
-                    "HPV FASTER, 22-30, 70% coverage, 30% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, 22-30, 70% coverage, 30% LTFU'],
-                        vx_scen=vx_scen["90% coverage"],
-                    ),
-                    "HPV FASTER, 22-30, 50% coverage, 10% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, 22-30, 50% coverage, 10% LTFU'],
-                        vx_scen=vx_scen["90% coverage"],
-                    ),
-                    "HPV FASTER, 22-30, 50% coverage, 30% LTFU": sc.objdict(
-                        screen_scen=screen_scens['HPV FASTER, 22-30, 50% coverage, 30% LTFU'],
-                        vx_scen=vx_scen["90% coverage"],
-                    ),
+                    # "HPV FASTER, 22-30, 70% coverage, 10% LTFU": sc.objdict(
+                    #     screen_scen=screen_scens['HPV FASTER, 22-30, 70% coverage, 10% LTFU'],
+                    #     vx_scen=vx_scen["90% coverage"],
+                    # ),
+                    # "HPV FASTER, 22-30, 70% coverage, 30% LTFU": sc.objdict(
+                    #     screen_scen=screen_scens['HPV FASTER, 22-30, 70% coverage, 30% LTFU'],
+                    #     vx_scen=vx_scen["90% coverage"],
+                    # ),
+                    # "HPV FASTER, 22-30, 50% coverage, 10% LTFU": sc.objdict(
+                    #     screen_scen=screen_scens['HPV FASTER, 22-30, 50% coverage, 10% LTFU'],
+                    #     vx_scen=vx_scen["90% coverage"],
+                    # ),
+                    # "HPV FASTER, 22-30, 50% coverage, 30% LTFU": sc.objdict(
+                    #     screen_scen=screen_scens['HPV FASTER, 22-30, 50% coverage, 30% LTFU'],
+                    #     vx_scen=vx_scen["90% coverage"],
+                    # ),
                     # "50% PxV, HPV FASTER, 22-30, 50% coverage, 10% LTFU": sc.objdict(
                     #     screen_scen=screen_scens['HPV FASTER, 22-30, 50% coverage, 10% LTFU'],
                     #     vx_scen=vx_scen["50% coverage"],
@@ -546,6 +546,6 @@ if __name__ == "__main__":
                 location=location,
                 debug=debug,
                 calib_filestem=calib_filestem,
-                filestem="_june25",
+                filestem="_july2",
             )
 
