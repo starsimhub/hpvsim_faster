@@ -80,8 +80,12 @@ def get_screen_intvs(
     
     if paired_px:
         # doing HPV FASTER
-        ramp_up_years = np.arange(start_year, year_cov_reached)
-        model_annual_screen_prob = 1 - (1 - screen_coverage) ** (1 / len(ramp_up_years))
+        if year_cov_reached == start_year:
+            ramp_up_years = start_year
+            model_annual_screen_prob = screen_coverage
+        else:
+            ramp_up_years = np.arange(start_year, year_cov_reached)
+            model_annual_screen_prob = 1 - (1 - screen_coverage) ** (1 / len(ramp_up_years))
         vx_eligible = lambda sim: np.isnan(sim.people.date_vaccinated)
         catchup_vx = hpv.campaign_vx(
             eligibility=vx_eligible,
