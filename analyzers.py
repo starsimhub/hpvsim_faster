@@ -183,7 +183,7 @@ class segmented_results(hpv.Analyzer):
         if sim.yearvec[sim.t] == self.intv_start:
             # Find inds to follow
             ppl = sim.people
-            females_in_age = (ppl.age >= self.intv_age[0]) & (ppl.age <= self.intv_age[1]) & (ppl.female)
+            females_in_age = (ppl.age >= self.intv_age[0]) & (ppl.age <= self.intv_age[1]) & (ppl.is_female)
             females_to_follow = hpv.true(females_in_age)
             self.cohort_to_follow = females_to_follow
 
