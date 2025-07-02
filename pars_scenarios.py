@@ -20,8 +20,8 @@ def get_vx_intvs(
     vx_eligible = lambda sim: np.isnan(sim.people.date_vaccinated)
     
     # Create a list of values linearly increasing from 0 in start_year to vx_coverage in year_cov_reached and then staying constant
-    vx_coverage_values_campaign = np.linspace(0.25, vx_coverage, year_cov_reached - start_year + 1)
-    vx_coverage_values_routine = np.append(vx_coverage_values_campaign, [vx_coverage] * (2060 - year_cov_reached + 1))
+    vx_coverage_values_campaign = np.linspace(0.25, vx_coverage, year_cov_reached - start_year)
+    vx_coverage_values_routine = np.append(vx_coverage_values_campaign, [vx_coverage] * (2060 - year_cov_reached))
     campaign_years = np.arange(start_year, year_cov_reached)
 
     routine_vx = hpv.routine_vx(
