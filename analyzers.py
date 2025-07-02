@@ -192,7 +192,7 @@ class segmented_results(hpv.Analyzer):
             li = np.floor(sim.yearvec[sim.t])
 
             # Get new people with cancer and add to the dataframe
-            new_cancers = ppl.date_cancerous[self.cohort_to_follow] == sim.t
+            new_cancers = ppl.date_cancerous[:,self.cohort_to_follow] == sim.t
             n_new_cancers = np.count_nonzero(new_cancers)
             self.df.loc[self.df['year'] == li, 'new_cancers'] += n_new_cancers
 
