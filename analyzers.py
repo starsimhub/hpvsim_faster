@@ -180,14 +180,14 @@ class segmented_results(hpv.Analyzer):
         
         # On each timestep, check if any new women have received HPV FASTER
         
-        if sim.yearvec[sim.t] == self.intv_start:
+        if sim.yearvec[sim.t] == 2020:
             # Find inds to follow
             ppl = sim.people
-            females_in_age = (ppl.age >= self.intv_age[0]) & (ppl.age <= self.intv_age[1]) & (ppl.is_female)
+            females_in_age = (ppl.age >= (self.intv_age[0]-8)) & (ppl.age <= (self.intv_age[1]-8)) & (ppl.is_female)
             females_to_follow = hpv.true(females_in_age)
             self.cohort_to_follow = females_to_follow
 
-        if sim.yearvec[sim.t] >= self.intv_start:
+        if sim.yearvec[sim.t] >= 2020:
             ppl = sim.people
             li = np.floor(sim.yearvec[sim.t])
 
