@@ -29,7 +29,7 @@ def get_vx_intvs(
 
     routine_vx = hpv.routine_vx(
         prob=vx_coverage_values_routine,
-        start_year=start_year,
+        years=routine_years,
         product=prod,
         age_range=routine_age,
         label="Routine vx",
