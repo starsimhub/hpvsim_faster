@@ -49,7 +49,7 @@ class TxSegmented(hpv.tx):
                         people[state][g, eff_treat_inds] = False  # People who get treated have their CINs removed
                         people['cin'][g, eff_treat_inds] = False  # People who get treated have their CINs removed
                         people[f'date_{state}'][g, eff_treat_inds] = np.nan
-                        averted_cancers = hpu.idefinedi(people['date_cancerous'][g, eff_treat_inds], eff_treat_inds)
+                        averted_cancers = eff_treat_inds[hpu.defined(people['date_cancerous'][g, eff_treat_inds])]
                         averted_cancer_inds += list(averted_cancers)
                         people[f'date_cancerous'][g, eff_treat_inds] = np.nan
 
