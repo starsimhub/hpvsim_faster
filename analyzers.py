@@ -172,6 +172,8 @@ class segmented_results(hpv.Analyzer):
             # Create a column for each age interval in the dataframe
             col_name = f"new_cancers_{intv_age[0]}-{intv_age[1]}"
             self.df[col_name] = 0
+            col_name = f'total_women_{intv_age[0]}-{intv_age[1]}'
+            self.df[col_name] = 0
 
         
         self.cohort_to_follow = []  # Dictionary to hold cohorts to follow for each age interval
@@ -188,11 +190,15 @@ class segmented_results(hpv.Analyzer):
             for i, intv_age in enumerate(self.intv_ages):
                 females_in_age = (ppl.age >= (intv_age[0]-8)) & (ppl.age <= (intv_age[1]-8)) & (ppl.is_female)
                 females_to_follow = hpv.true(females_in_age)
+                
                 self.cohort_to_follow.append(females_to_follow)
 
         if sim.yearvec[sim.t] >= 2020:
             ppl = sim.people
             li = np.floor(sim.yearvec[sim.t])
+            
+            if sim.yearvec[sim.t] == 2028:
+                self.df.loc[self.df['year'] == li, f'total_women_{intv_age[0]}-{intv_age[1]}'] = ppl.scale[females_to_follow].sum()
 
             # Get new people with cancer and add to the dataframe
             for i, intv_age in enumerate(self.intv_ages):
