@@ -169,12 +169,14 @@ def run_scens(
             print('scenario_label', scenario_label)
             segmented_results = sim.get_analyzer(an.segmented_results).df
             if scenario_label == '50-0-0':
-                segmented_results['averted_cancers'] = 0
-                segmented_results['treatments'] = 0
+                for intv_age in [(22, 25), (26,30), (31,40), (41,50)]:
+                    segmented_results[f'averted_cancers_{intv_age[0]}-{intv_age[1]}'] = 0
+                    segmented_results[f'treatments_{intv_age[0]}-{intv_age[1]}'] = 0
             else:
-                segmented_tx = sim.get_intervention('ablation').product.results
-                segmented_results['averted_cancers'] = segmented_tx['averted_cancers']
-                segmented_results['treatments'] = segmented_tx['treatments']
+                segmented_tx = sim.get_intervention('ablation').product.df
+                for intv_age in [(22, 25), (26,30), (31,40), (41,50)]:
+                    segmented_results[f'averted_cancers_{intv_age[0]}-{intv_age[1]}'] = segmented_tx[f'averted_cancers_{intv_age[0]}-{intv_age[1]}']
+                    segmented_results[f'treatments_{intv_age[0]}-{intv_age[1]}'] = segmented_tx[f'treatments_{intv_age[0]}-{intv_age[1]}']
                 
                 # segmented_tx = sim.get_intervention('excision').product.results
                 # segmented_results['averted_cancers'] += segmented_tx['averted_cancers']
