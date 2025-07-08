@@ -178,7 +178,7 @@ class segmented_results(hpv.Analyzer):
     
     def apply(self, sim):
         
-        # On each timestep, check if any new women have received HPV FASTER
+        # On each timestep, check cancers for cohort of women following
         
         if sim.yearvec[sim.t] == 2020:
             # Find inds to follow

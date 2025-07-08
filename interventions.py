@@ -26,7 +26,7 @@ class TxSegmented(hpv.tx):
         tx_successful = []  # Initialize list of successfully treated individuals
         people = sim.people
 
-        over_treatment = people.date_cancerous[:,inds] == np.nan
+        over_treatment = np.isnan(people.date_cancerous[:,inds])
         n_overtreatments = np.count_nonzero(over_treatment)
         self.results['overtreatments'] += n_overtreatments
         self.results['treatments'] += len(inds) 

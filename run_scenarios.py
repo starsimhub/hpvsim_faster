@@ -608,7 +608,7 @@ if __name__ == "__main__":
                 location=location,
                 debug=debug,
                 calib_filestem=calib_filestem,
-                filestem="_july7_sens_segmented_results",
+                filestem="_july7_sens",
                 sens=True
             )
             
