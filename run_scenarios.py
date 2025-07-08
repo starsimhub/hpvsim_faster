@@ -166,12 +166,12 @@ def run_scens(
         if sens:
             simvals = sim.meta.vals
             scenario_label = simvals.scen
+            segmented_results = sim.get_analyzer(an.segmented_results).df
             if scenario_label == '50-0-0':
                 segmented_results['overtreatments'] = 0
                 segmented_results['treatments'] = 0
             else:
                 segmented_tx = sim.get_intervention(hpi.TxSegmented).results
-                segmented_results = sim.get_analyzer(an.segmented_results).df
                 segmented_results['overtreatments'] = segmented_tx['overtreatments']
                 segmented_results['treatments'] = segmented_tx['treatments']
             segmented_results["location"] = location
