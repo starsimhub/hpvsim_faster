@@ -496,6 +496,15 @@ if __name__ == "__main__":
                         ltfu=0.0,
                         age_range=(22, 50),
                         paired_px=True,
+                    ), 
+                    'HPV FASTER, 22-50, 100% coverage, 100% LTFU': dict(
+                        primary=hpv_screen,
+                        screen_coverage=1.0,
+                        start_year=2028,
+                        year_cov_reached=2028,
+                        ltfu=1.0,
+                        age_range=(22, 50),
+                        paired_px=True,
                     ),                    
                 }
             )
@@ -557,6 +566,10 @@ if __name__ == "__main__":
 
                     "50% PxV, HPV FASTER, 22-50, 100% coverage, 0% LTFU": sc.objdict(
                         screen_scen=screen_scens['HPV FASTER, 22-50, 100% coverage, 0% LTFU'],
+                        vx_scen=vx_scen["50% coverage"],
+                    ),
+                    "50% PxV, HPV FASTER, 22-50, 100% coverage, 100% LTFU": sc.objdict(
+                        screen_scen=screen_scens['HPV FASTER, 22-50, 100% coverage, 100% LTFU'],
                         vx_scen=vx_scen["50% coverage"],
                     ),
                     # "50% PxV, HPV FASTER, 22-50, 50% coverage, 30% LTFU": sc.objdict(
