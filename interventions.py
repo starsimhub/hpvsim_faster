@@ -38,7 +38,7 @@ class TxSegmented(hpv.tx):
         averted_cancer_inds = []
         for intv_age in self.intv_ages:
             inds_in_age = inds[hpu.true((people.age[inds] >= (intv_age[0])) & (people.age[inds] <= (intv_age[1])))]
-            self.dresults_dff.loc[self.df['year'] == sim.yearvec[sim.t], f'treatments_{intv_age[0]}-{intv_age[1]}'] = people.scale[inds_in_age].sum()  # Count total treatments administered
+            self.results_df.loc[self.df['year'] == sim.yearvec[sim.t], f'treatments_{intv_age[0]}-{intv_age[1]}'] = people.scale[inds_in_age].sum()  # Count total treatments administered
             
 
         # self.results['treatments'] += people.scale[inds].sum()  # Count total treatments administered
