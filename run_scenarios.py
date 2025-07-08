@@ -173,14 +173,12 @@ def run_scens(
                     segmented_results[f'cancers_averted_{intv_age[0]}-{intv_age[1]}'] = 0
                     segmented_results[f'treatments_{intv_age[0]}-{intv_age[1]}'] = 0
             else:
-                segmented_tx = sim.get_intervention('ablation').product.results_df
+                segmented_tx_ablation = sim.get_intervention('ablation').product.results_df
+                segmented_tx_excision = sim.get_intervention('excision').product.results
                 for intv_age in [(22, 25), (26,30), (31,40), (41,50)]:
-                    segmented_results[f'cancers_averted_{intv_age[0]}-{intv_age[1]}'] = segmented_tx[f'cancers_averted_{intv_age[0]}-{intv_age[1]}']
-                    segmented_results[f'treatments_{intv_age[0]}-{intv_age[1]}'] = segmented_tx[f'treatments_{intv_age[0]}-{intv_age[1]}']
+                    segmented_results[f'cancers_averted_{intv_age[0]}-{intv_age[1]}'] = segmented_tx_ablation[f'cancers_averted_{intv_age[0]}-{intv_age[1]}'] + segmented_tx_excision[f'cancers_averted_{intv_age[0]}-{intv_age[1]}']
+                    segmented_results[f'treatments_{intv_age[0]}-{intv_age[1]}'] = segmented_tx_ablation[f'treatments_{intv_age[0]}-{intv_age[1]}'] + segmented_tx_excision[f'treatments_{intv_age[0]}-{intv_age[1]}']
                 
-                # segmented_tx = sim.get_intervention('excision').product.results
-                # segmented_results['averted_cancers'] += segmented_tx['averted_cancers']
-                # segmented_results['treatments'] += segmented_tx['treatments']
             segmented_results["location"] = location
             segmented_results["seed"] = i_s
             segmented_results["scenario"] = sim.meta.vals["scen"]
