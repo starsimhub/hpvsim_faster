@@ -172,7 +172,7 @@ def run_scens(
                 segmented_results['overtreatments'] = 0
                 segmented_results['treatments'] = 0
             else:
-                segmented_tx = sim.get_intervention(hpi.TxSegmented).results
+                segmented_tx = sim.get_intervention('ablation').product.results
                 segmented_results['overtreatments'] = segmented_tx['overtreatments']
                 segmented_results['treatments'] = segmented_tx['treatments']
             segmented_results["location"] = location
@@ -494,10 +494,10 @@ if __name__ == "__main__":
                     #     screen_scen=screen_scens["No screening"],
                     #     vx_scen=vx_scen["90% coverage"],
                     # ),
-                    "50-0-0": sc.objdict(
-                        screen_scen=screen_scens["No screening"],
-                        vx_scen=vx_scen["50% coverage"],
-                    ),
+                    # "50-0-0": sc.objdict(
+                    #     screen_scen=screen_scens["No screening"],
+                    #     vx_scen=vx_scen["50% coverage"],
+                    # ),
                     # "90-70-90": sc.objdict(
                     #     screen_scen=screen_scens["70% coverage, 10% LTFU"],
                     #     vx_scen=vx_scen["90% coverage"],
