@@ -174,7 +174,7 @@ class segmented_results(hpv.Analyzer):
             self.df[col_name] = 0
 
         
-        self.cohort_to_follow = sc.objdict()  # Dictionary to hold cohorts to follow for each age interval
+        self.cohort_to_follow = []  # Dictionary to hold cohorts to follow for each age interval
 
         return
     
@@ -188,7 +188,7 @@ class segmented_results(hpv.Analyzer):
             for i, intv_age in enumerate(self.intv_ages):
                 females_in_age = (ppl.age >= (intv_age[0]-8)) & (ppl.age <= (intv_age[1]-8)) & (ppl.is_female)
                 females_to_follow = hpv.true(females_in_age)
-                self.cohort_to_follow[i] = females_to_follow
+                self.cohort_to_follow.append(females_to_follow)
 
         if sim.yearvec[sim.t] >= 2020:
             ppl = sim.people
