@@ -198,7 +198,8 @@ class segmented_results(hpv.Analyzer):
             li = np.floor(sim.yearvec[sim.t])
             
             if sim.yearvec[sim.t] == 2028:
-                self.df.loc[self.df['year'] == li, f'total_women_{intv_age[0]}-{intv_age[1]}'] = ppl.scale[females_to_follow].sum()
+                for i, intv_age in enumerate(self.intv_ages):
+                    self.df.loc[self.df['year'] == li, f'total_women_{intv_age[0]}-{intv_age[1]}'] = ppl.scale[self.cohort_to_follow[i]].sum()
 
             # Get new people with cancer and add to the dataframe
             for i, intv_age in enumerate(self.intv_ages):
