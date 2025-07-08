@@ -169,12 +169,16 @@ def run_scens(
             print('scenario_label', scenario_label)
             segmented_results = sim.get_analyzer(an.segmented_results).df
             if scenario_label == '50-0-0':
-                segmented_results['overtreatments'] = 0
+                segmented_results['averted_cancers'] = 0
                 segmented_results['treatments'] = 0
             else:
                 segmented_tx = sim.get_intervention('ablation').product.results
-                segmented_results['overtreatments'] = segmented_tx['overtreatments']
+                segmented_results['averted_cancers'] = segmented_tx['averted_cancers']
                 segmented_results['treatments'] = segmented_tx['treatments']
+                
+                # segmented_tx = sim.get_intervention('excision').product.results
+                # segmented_results['averted_cancers'] += segmented_tx['averted_cancers']
+                # segmented_results['treatments'] += segmented_tx['treatments']
             segmented_results["location"] = location
             segmented_results["seed"] = i_s
             segmented_results["scenario"] = sim.meta.vals["scen"]
@@ -281,6 +285,13 @@ if __name__ == "__main__":
             vx_scen = {
                 "90% coverage": dict(
                         vx_coverage=0.9,
+                        age_range=(9, 14),
+                        start_year=2026,
+                        year_cov_reached=2036
+                    ),
+                
+                "70% coverage": dict(
+                        vx_coverage=0.7,
                         age_range=(9, 14),
                         start_year=2026,
                         year_cov_reached=2036
@@ -498,6 +509,10 @@ if __name__ == "__main__":
                         screen_scen=screen_scens["No screening"],
                         vx_scen=vx_scen["50% coverage"],
                     ),
+                    # "70-0-0": sc.objdict(
+                    #     screen_scen=screen_scens["No screening"],
+                    #     vx_scen=vx_scen["70% coverage"],
+                    # ),
                     # "90-70-90": sc.objdict(
                     #     screen_scen=screen_scens["70% coverage, 10% LTFU"],
                     #     vx_scen=vx_scen["90% coverage"],
