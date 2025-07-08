@@ -78,8 +78,8 @@ class TxSegmented(hpv.tx):
 
         if len(averted_cancer_inds) > 0:
             for intv_age in self.intv_ages:
-                averted_cancer_inds_in_age = hpu.true((people.age[averted_cancer_inds] >= (intv_age[0])) & (people.age[averted_cancer_inds] <= (intv_age[1])))
-                print('averted_cancer_inds_in_age', averted_cancer_inds_in_age)
+                # averted_cancer_inds_in_age = hpu.true((people.age[averted_cancer_inds] >= (intv_age[0])) & (people.age[averted_cancer_inds] <= (intv_age[1])))
+                # print('averted_cancer_inds_in_age', averted_cancer_inds_in_age)
                 averted_cancer_inds_in_age = averted_cancer_inds[hpu.true((people.age[averted_cancer_inds] >= (intv_age[0])) & (people.age[averted_cancer_inds] <= (intv_age[1])))]
                 self.results_df.loc[self.results_df['year'] == sim.yearvec[sim.t], f'averted_cancers_{intv_age[0]}-{intv_age[1]}'] = people.scale[averted_cancer_inds_in_age].sum()  # Count total treatments administered
         #     # print('averted_cancer_inds', averted_cancer_inds)
