@@ -155,24 +155,26 @@ class segmented_results(hpv.Analyzer):
     Analyzer for producing segmented results for women reached by interventions.
     """
 
-    def __init__(self, intv_start=2028, intv_age=[22,50], *args, **kwargs):
+    def __init__(self, intv_start=2028, intv_ages=[(22, 25), (26,30), (31,40), (41,50)], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.intv_start = intv_start
-        self.intv_age = intv_age
+        self.intv_ages = intv_ages
         self.df = pd.DataFrame()
         return
         
         
     def initialize(self, sim):
         super().initialize(sim)
-        columns = [
-            "new_cancers",
-            "year"
-        ]
         # Initialize the dataframe with columns for results
-        self.df = pd.DataFrame(columns=columns)
+        self.df = pd.DataFrame()
         self.df['year'] = sim.res_yearvec
-        self.df['new_cancers'] = 0  # Initialize new_cancers to zero
+        for intv_age in self.intv_ages:
+            # Create a column for each age interval in the dataframe
+            col_name = f"new_cancers_{intv_age[0]}-{intv_age[1]}"
+            self.df[col_name] = 0
+
+        
+        self.cohort_to_follow = sc.objdict()  # Dictionary to hold cohorts to follow for each age interval
 
         return
     
@@ -183,18 +185,22 @@ class segmented_results(hpv.Analyzer):
         if sim.yearvec[sim.t] == 2020:
             # Find inds to follow
             ppl = sim.people
-            females_in_age = (ppl.age >= (self.intv_age[0]-8)) & (ppl.age <= (self.intv_age[1]-8)) & (ppl.is_female)
-            females_to_follow = hpv.true(females_in_age)
-            self.cohort_to_follow = females_to_follow
+            for i, intv_age in enumerate(self.intv_ages):
+                females_in_age = (ppl.age >= (intv_age[0]-8)) & (ppl.age <= (intv_age[1]-8)) & (ppl.is_female)
+                females_to_follow = hpv.true(females_in_age)
+                self.cohort_to_follow[i] = females_to_follow
 
         if sim.yearvec[sim.t] >= 2020:
             ppl = sim.people
             li = np.floor(sim.yearvec[sim.t])
 
             # Get new people with cancer and add to the dataframe
-            new_cancers = ppl.date_cancerous[:,self.cohort_to_follow] == sim.t
-            n_new_cancers = np.count_nonzero(new_cancers)
-            self.df.loc[self.df['year'] == li, 'new_cancers'] += n_new_cancers
+            for i, intv_age in enumerate(self.intv_ages):
+                # Get the cohort to follow for this age interval
+                cohort_inds = self.cohort_to_follow[i]
+                new_cancers = ppl.date_cancerous[:,cohort_inds] == sim.t
+                new_cancer_inds = hpv.true(new_cancers)
+                self.df.loc[self.df['year'] == li, f'new_cancers_{intv_age[0]}-{intv_age[1]}'] += sim.people.scale[new_cancer_inds].sum()
 
         return
 
