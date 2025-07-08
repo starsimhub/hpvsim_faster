@@ -75,6 +75,7 @@ class TxSegmented(hpv.tx):
                         people.date_reactivated[g, eff_treat_inds] = np.nan
 
         averted_cancer_inds = np.array(list(set(averted_cancer_inds)))
+        print('averted_cancer_inds', averted_cancer_inds)
         
         for intv_age in self.intv_ages:
             averted_cancer_inds_in_age = hpu.true((people.age[averted_cancer_inds] >= (intv_age[0])) & (people.age[averted_cancer_inds] <= (intv_age[1])))
