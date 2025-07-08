@@ -62,8 +62,8 @@ class TxSegmented(hpv.tx):
 
         averted_cancer_inds = np.array(list(set(averted_cancer_inds)))
         if len(averted_cancer_inds) > 0:
-            print('averted_cancer_inds', averted_cancer_inds)
-        #     self.results['averted_cancers'] += people.scale[averted_cancer_inds].sum()
+            # print('averted_cancer_inds', averted_cancer_inds)
+            self.results['averted_cancers'] += people.scale[averted_cancer_inds].sum()
         # print('averted_cancer_inds', averted_cancer_inds)
         # self.results['averted_cancers'] += people.scale[averted_cancer_inds].sum()
         tx_successful = np.array(list(set(tx_successful)))
