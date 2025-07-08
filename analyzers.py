@@ -199,7 +199,7 @@ class segmented_results(hpv.Analyzer):
                 # Get the cohort to follow for this age interval
                 cohort_inds = self.cohort_to_follow[i]
                 new_cancers = ppl.date_cancerous[:,cohort_inds] == sim.t
-                new_cancer_inds = hpv.itruei(new_cancers, cohort_inds)
+                new_cancer_inds = hpv.itrue(new_cancers, cohort_inds)
                 self.df.loc[self.df['year'] == li, f'new_cancers_{intv_age[0]}-{intv_age[1]}'] += sim.people.scale[new_cancer_inds].sum()
 
         return
