@@ -26,7 +26,8 @@ class TxSegmented(hpv.tx):
         tx_successful = []  # Initialize list of successfully treated individuals
         people = sim.people
 
-        over_treatment_inds = hpu.iundefinedi(people.date_cancerous[:,inds], inds)
+        over_treatment = people.date_cancerous[:,inds] == np.nan  # Determine who is being over-treated
+        over_treatment_inds = inds[hpu.true(over_treatment)]  # Get indices of those
         n_overtreatments = people.scale[over_treatment_inds].sum()
         self.results['overtreatments'] += n_overtreatments
         self.results['treatments'] += people.scale[inds].sum()
