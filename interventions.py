@@ -62,7 +62,7 @@ class TxSegmented(hpv.tx):
 
         averted_cancer_inds = np.array(list(set(averted_cancer_inds)))
         print('averted_cancer_inds', averted_cancer_inds)
-        self.results['averted_cancers'] += people.scale[averted_cancer_inds].sum()
+        # self.results['averted_cancers'] += people.scale[averted_cancer_inds].sum()
         tx_successful = np.array(list(set(tx_successful)))
         tx_unsuccessful = np.setdiff1d(inds, tx_successful)
         if return_format == 'dict':
