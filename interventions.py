@@ -13,7 +13,7 @@ import pandas as pd
 class TxSegmented(hpv.tx):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.df = None
+        self.results_df = None
         self.intv_ages = [(22, 25), (26,30), (31,40), (41,50)]
 
     def administer(self, sim, inds, return_format='dict'):
@@ -21,15 +21,15 @@ class TxSegmented(hpv.tx):
         Loop over treatment states to determine those who are successfully treated and clear infection
         '''        
         
-        if self.df is None:
-            self.df = pd.DataFrame()
-            self.df['year'] = sim.res_yearvec
+        if self.results_df is None:
+            self.results_df = pd.DataFrame()
+            self.results_df['year'] = sim.res_yearvec
             for intv_age in self.intv_ages:
                 # Create a column for each age interval in the dataframe
                 col_name = f"cancers_averted_{intv_age[0]}-{intv_age[1]}"
-                self.df[col_name] = 0
+                self.results_df[col_name] = 0
                 col_name = f"treatments_{intv_age[0]}-{intv_age[1]}"
-                self.df[col_name] = 0
+                self.results_df[col_name] = 0
 
 
         tx_successful = []  # Initialize list of successfully treated individuals
@@ -38,7 +38,7 @@ class TxSegmented(hpv.tx):
         averted_cancer_inds = []
         for intv_age in self.intv_ages:
             inds_in_age = inds[hpu.true((people.age[inds] >= (intv_age[0])) & (people.age[inds] <= (intv_age[1])))]
-            self.df.loc[self.df['year'] == sim.yearvec[sim.t], f'treatments_{intv_age[0]}-{intv_age[1]}'] = people.scale[inds_in_age].sum()  # Count total treatments administered
+            self.dresults_dff.loc[self.df['year'] == sim.yearvec[sim.t], f'treatments_{intv_age[0]}-{intv_age[1]}'] = people.scale[inds_in_age].sum()  # Count total treatments administered
             
 
         # self.results['treatments'] += people.scale[inds].sum()  # Count total treatments administered
@@ -81,7 +81,7 @@ class TxSegmented(hpv.tx):
                 averted_cancer_inds_in_age = hpu.true((people.age[averted_cancer_inds] >= (intv_age[0])) & (people.age[averted_cancer_inds] <= (intv_age[1])))
                 print('averted_cancer_inds_in_age', averted_cancer_inds_in_age)
                 averted_cancer_inds_in_age = averted_cancer_inds[hpu.true((people.age[averted_cancer_inds] >= (intv_age[0])) & (people.age[averted_cancer_inds] <= (intv_age[1])))]
-                self.df.loc[self.df['year'] == sim.yearvec[sim.t], f'averted_cancers_{intv_age[0]}-{intv_age[1]}'] = people.scale[averted_cancer_inds_in_age].sum()  # Count total treatments administered
+                self.results_df.loc[self.df['year'] == sim.yearvec[sim.t], f'averted_cancers_{intv_age[0]}-{intv_age[1]}'] = people.scale[averted_cancer_inds_in_age].sum()  # Count total treatments administered
         #     # print('averted_cancer_inds', averted_cancer_inds)
         #     self.results['averted_cancers'] += people.scale[averted_cancer_inds].sum()
         # print('averted_cancer_inds', averted_cancer_inds)
