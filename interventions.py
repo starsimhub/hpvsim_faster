@@ -41,7 +41,7 @@ class TxSegmented(hpv.tx):
             self.df.loc[self.df['year'] == sim.yearvec[sim.t], f'treatments_{intv_age[0]}-{intv_age[1]}'] = people.scale[inds_in_age].sum()  # Count total treatments administered
             
 
-        self.results['treatments'] += people.scale[inds].sum()  # Count total treatments administered
+        # self.results['treatments'] += people.scale[inds].sum()  # Count total treatments administered
         
         for state in self.states:  # Loop over states
             for g, genotype in sim['genotype_map'].items():  # Loop over genotypes in the sim
@@ -80,9 +80,9 @@ class TxSegmented(hpv.tx):
             averted_cancer_inds_in_age = averted_cancer_inds[(people.age[averted_cancer_inds] >= (intv_age[0])) & (people.age[averted_cancer_inds] <= (intv_age[1]))]
             self.df.loc[self.df['year'] == sim.yearvec[sim.t], f'averted_cancers_{intv_age[0]}-{intv_age[1]}'] = people.scale[averted_cancer_inds_in_age].sum()  # Count total treatments administered
 
-        if len(averted_cancer_inds) > 0:
-            # print('averted_cancer_inds', averted_cancer_inds)
-            self.results['averted_cancers'] += people.scale[averted_cancer_inds].sum()
+        # if len(averted_cancer_inds) > 0:
+        #     # print('averted_cancer_inds', averted_cancer_inds)
+        #     self.results['averted_cancers'] += people.scale[averted_cancer_inds].sum()
         # print('averted_cancer_inds', averted_cancer_inds)
         # self.results['averted_cancers'] += people.scale[averted_cancer_inds].sum()
         tx_successful = np.array(list(set(tx_successful)))
