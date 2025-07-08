@@ -27,9 +27,10 @@ class TxSegmented(hpv.tx):
         people = sim.people
 
         over_treatment = np.isnan(people.date_cancerous[:,inds])
-        n_overtreatments = np.count_nonzero(over_treatment)
+        over_treatment_inds = hpu.true(over_treatment)  # Indices of people who are overtreatments
+        n_overtreatments = people.scale[over_treatment_inds].sum()
         self.results['overtreatments'] += n_overtreatments
-        self.results['treatments'] += len(inds) 
+        self.results['treatments'] += people.scale[inds].sum()
         
         for state in self.states:  # Loop over states
             for g, genotype in sim['genotype_map'].items():  # Loop over genotypes in the sim
