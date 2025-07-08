@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import sciris as sc
 import hpvsim as hpv
+import interventions as hpi
 
 
 def get_vx_intvs(
@@ -315,6 +316,7 @@ def make_tx(prod_name="ablation"):
     basedf = pd.read_csv("tx_pars.csv")
     df = basedf[basedf["name"] == prod_name]
     # Make the screen product
-    screen_test = hpv.tx(df)
+    # screen_test = hpv.tx(df)
+    screen_test = hpi.TxSegmented(df=df)
     return screen_test
 
