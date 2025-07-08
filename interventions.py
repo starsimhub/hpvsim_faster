@@ -14,7 +14,7 @@ class TxSegmented(hpv.tx):
         super().__init__(**kwargs)
         
         self.results = {
-            'overtreatments': 0,
+            'averted_cancers': 0,
             'treatments': 0,
         }
 
@@ -26,11 +26,8 @@ class TxSegmented(hpv.tx):
         tx_successful = []  # Initialize list of successfully treated individuals
         people = sim.people
 
-        over_treatment = people.date_cancerous[:,inds] == np.nan  # Determine who is being over-treated
-        over_treatment_inds = inds[hpu.true(over_treatment)]  # Get indices of those
-        n_overtreatments = people.scale[over_treatment_inds].sum()
-        self.results['overtreatments'] += n_overtreatments
-        self.results['treatments'] += people.scale[inds].sum()
+        averted_cancer_inds = []
+        self.results['treatments'] += people.scale[inds].sum()  # Count total treatments administered
         
         for state in self.states:  # Loop over states
             for g, genotype in sim['genotype_map'].items():  # Loop over genotypes in the sim
@@ -52,6 +49,8 @@ class TxSegmented(hpv.tx):
                         people[state][g, eff_treat_inds] = False  # People who get treated have their CINs removed
                         people['cin'][g, eff_treat_inds] = False  # People who get treated have their CINs removed
                         people[f'date_{state}'][g, eff_treat_inds] = np.nan
+                        averted_cancers = hpu.idefinedi(people['date_cancerous'][g, eff_treat_inds], eff_treat_inds)
+                        averted_cancer_inds += list(averted_cancers)
                         people[f'date_cancerous'][g, eff_treat_inds] = np.nan
 
                         # alternatively, clear now:
@@ -61,6 +60,8 @@ class TxSegmented(hpv.tx):
                         hpimm.update_peak_immunity(people, eff_treat_inds, imm_pars=people.pars, imm_source=g)  # update immunity
                         people.date_reactivated[g, eff_treat_inds] = np.nan
 
+        averted_cancer_inds = np.array(list(set(averted_cancer_inds)))
+        self.results['averted_cancers'] += people.scale[averted_cancer_inds].sum()
         tx_successful = np.array(list(set(tx_successful)))
         tx_unsuccessful = np.setdiff1d(inds, tx_successful)
         if return_format == 'dict':
