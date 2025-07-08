@@ -166,6 +166,7 @@ def run_scens(
         if sens:
             simvals = sim.meta.vals
             scenario_label = simvals.scen
+            print('scenario_label', scenario_label)
             segmented_results = sim.get_analyzer(an.segmented_results).df
             if scenario_label == '50-0-0':
                 segmented_results['overtreatments'] = 0
