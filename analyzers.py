@@ -155,7 +155,7 @@ class segmented_results(hpv.Analyzer):
     Analyzer for producing segmented results for women reached by interventions.
     """
 
-    def __init__(self, intv_start=2028, intv_ages=[(22, 25), (26,30), (31,40), (41,50)], *args, **kwargs):
+    def __init__(self, intv_start=2028, intv_ages=[(25,30), (31,40), (41,50)], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.intv_start = intv_start
         self.intv_ages = intv_ages

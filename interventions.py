@@ -14,7 +14,7 @@ class TxSegmented(hpv.tx):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.results_df = None
-        self.intv_ages = [(22, 25), (26,30), (31,40), (41,50)]
+        self.intv_ages = [(25,30), (31,40), (41,50)]
 
     def administer(self, sim, inds, return_format='dict'):
         '''
