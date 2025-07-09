@@ -127,7 +127,7 @@ class econ_analyzer(hpv.Analyzer):
                     "Catchup vx"
                 ).n_products_used.values[idx]
 
-            if scenario_label != '90-0-0' and scenario_label != '50-0-0':
+            if scenario_label != '90-0-0' and scenario_label != '50-0-0' and scenario_label != '70-0-0':
                 self.df["new_hpv_screens"] += sim.get_intervention(
                             "screening"
                         ).n_products_used.values[idx]
