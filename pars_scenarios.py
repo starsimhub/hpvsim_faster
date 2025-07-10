@@ -160,7 +160,7 @@ def get_screen_intvs(
     else:
         # regular screening
         if year_cov_reached == start_year:
-            years = start_year
+            years = [start_year]
             model_annual_screen_prob = screen_coverage
         else:
             years = np.arange(start_year, 2060)
