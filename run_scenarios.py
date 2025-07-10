@@ -168,7 +168,7 @@ def run_scens(
             scenario_label = simvals.scen
             print('scenario_label', scenario_label)
             segmented_results = sim.get_analyzer(an.segmented_results).df
-            if scenario_label == '50-0-0':
+            if scenario_label == '50-0-0' or scenario_label == '70-0-0':
                 for intv_age in [(25,30), (31,40), (41,50)]:
                     segmented_results[f'cancers_averted_{intv_age[0]}-{intv_age[1]}'] = 0
                     segmented_results[f'treatments_{intv_age[0]}-{intv_age[1]}'] = 0
