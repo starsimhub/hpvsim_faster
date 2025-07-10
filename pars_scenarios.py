@@ -159,11 +159,13 @@ def get_screen_intvs(
         
     else:
         # regular screening
-    
-
-        len_age_range = (age_range[1] - age_range[0]) / 2
-
-        model_annual_screen_prob = 1 - (1 - screen_coverage) ** (1 / len_age_range)
+        if year_cov_reached == start_year:
+            years = start_year
+            model_annual_screen_prob = screen_coverage
+        else:
+            years = np.arange(start_year, 2060)
+            len_age_range = (age_range[1] - age_range[0]) / 2
+            model_annual_screen_prob = 1 - (1 - screen_coverage) ** (1 / len_age_range)
 
         # Routine screening
         screen_eligible = lambda sim: np.isnan(sim.people.date_screened) | (
@@ -174,7 +176,7 @@ def get_screen_intvs(
             prob=model_annual_screen_prob,
             eligibility=screen_eligible,
             age_range=[30, 50],
-            start_year=start_year,
+            years=years,
             label="screening",
         )
 
