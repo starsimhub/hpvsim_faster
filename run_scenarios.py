@@ -310,8 +310,8 @@ if __name__ == "__main__":
                     "100% coverage, 0% LTFU": dict(
                         primary=hpv_screen,
                         screen_coverage=1,
-                        start_year=2026,
-                        year_cov_reached=2026,
+                        start_year=2028,
+                        year_cov_reached=2028,
                         age_range=(25, 50),
                         ltfu=0.0,
                     ),
