@@ -51,7 +51,7 @@ def get_vx_intvs(
 def get_screen_intvs(
     primary=None, triage=None, screen_coverage=0.7, ltfu=0.3, start_year=2025,
     year_cov_reached=2030,
-    age_range=(30, 50), paired_px=False
+    age_range=(30, 50), paired_px=False, pxv_immunity=True
 ):
     """
     Make interventions for screening scenarios
@@ -88,11 +88,14 @@ def get_screen_intvs(
             ramp_up_years = np.arange(start_year, year_cov_reached)
             model_annual_screen_prob = 1 - (1 - screen_coverage) ** (1 / len(ramp_up_years))
         vx_eligible = lambda sim: np.isnan(sim.people.date_vaccinated)
+        hpv_faster_pxv = hpv.default_vx(prod_name='nonavalent')
+        if pxv_immunity is False:
+            hpv_faster_pxv.imm_init = dict(dist='uniform', par1=0, par2=0)
         catchup_vx = hpv.campaign_vx(
             eligibility=vx_eligible,
             prob=model_annual_screen_prob,
             years=ramp_up_years,
-            product='nonavalent',
+            product=hpv_faster_pxv,
             age_range=age_range,
             label="HPV FASTER vx",
         )

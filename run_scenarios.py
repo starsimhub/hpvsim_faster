@@ -507,6 +507,7 @@ if __name__ == "__main__":
                         age_range=(25, 50),
                         paired_px=True,
                     ), 
+                    
                     'HPV FASTER, 25-50, 100% coverage, 100% LTFU': dict(
                         primary=hpv_screen,
                         screen_coverage=1.0,
@@ -515,6 +516,16 @@ if __name__ == "__main__":
                         ltfu=1.0,
                         age_range=(25, 50),
                         paired_px=True,
+                    ), 
+                    'HPV FASTER, 25-50, 100% coverage, 0% LTFU, no PxV': dict(
+                        primary=hpv_screen,
+                        screen_coverage=1.0,
+                        start_year=2028,
+                        year_cov_reached=2028,
+                        ltfu=0.0,
+                        age_range=(25, 50),
+                        paired_px=True,
+                        pxv_immunity=False,
                     ),                    
                 }
             )
@@ -632,6 +643,10 @@ if __name__ == "__main__":
                         screen_scen=screen_scens['HPV FASTER, 25-50, 100% coverage, 0% LTFU'],
                         vx_scen=vx_scen["70% coverage"],
                     ),
+                    "70% PxV, HPV FASTER, 25-50, 100% coverage, 0% LTFU, No PxV": sc.objdict(
+                        screen_scen=screen_scens['HPV FASTER, 25-50, 100% coverage, 0% LTFU, no PxV'],
+                        vx_scen=vx_scen["70% coverage"],
+                    ),
                     "70% PxV, HPV FASTER, 25-50, 100% coverage, 100% LTFU": sc.objdict(
                         screen_scen=screen_scens['HPV FASTER, 25-50, 100% coverage, 100% LTFU'],
                         vx_scen=vx_scen["70% coverage"],
@@ -649,7 +664,7 @@ if __name__ == "__main__":
                 location=location,
                 debug=debug,
                 calib_filestem=calib_filestem,
-                filestem="_july10",
+                filestem="_july11",
                 sens=True
             )
             
