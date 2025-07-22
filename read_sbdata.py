@@ -71,6 +71,11 @@ def read_debut_data(dist_type='lognormal'):
         age_columns = ['Country'] + sex_columns
         dfw = df1[age_columns]
         dfw = dfw.melt(id_vars='Country', value_name='Percentage', var_name='AgeStr')
+        
+        print(f"Processing {sex} data:")
+        print(f"Found columns: {sex_columns}")
+        print(f"Sample data for first country:")
+        print(dfw[dfw['Country'] == dfw['Country'].iloc[0]].head())
 
         # Add values for proportion ever having sex (only if 'never' column exists)
         countries = dfw.Country.unique()
@@ -533,9 +538,8 @@ def plot_casuals():
 #%% Run as a script
 if __name__ == '__main__':
 
-    # countries, dff, df2, rvs = read_debut_data(dist_type=dist_type)
-
     dist_type = 'lognormal'
+    countries, dff, df2, rvs = read_debut_data(dist_type=dist_type)
     do_run = False
 
     if do_run:
@@ -551,6 +555,6 @@ if __name__ == '__main__':
     # plot_sb(dist_type=dist_type)
     # plot_prop_married()
     # plot_age_diffs()
-    plot_casuals()
+    # plot_casuals()
 
     print('Done.')

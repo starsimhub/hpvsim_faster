@@ -28,17 +28,17 @@ import utils as ut
 
 # CONFIGURATIONS TO BE SET BY USERS BEFORE RUNNING
 to_run = [
-    #'run_calibration',  # Make sure this is uncommented if you want to _run_ the calibrations (usually on VMs)
-    "plot_calibration",  # Make sure this is uncommented if you want to _plot_ the calibrations (usually locally)
+    'run_calibration',  # Make sure this is uncommented if you want to _run_ the calibrations (usually on VMs)
+    #"plot_calibration",  # Make sure this is uncommented if you want to _plot_ the calibrations (usually locally)
 ]
 debug = (
-    False  # If True, this will do smaller runs that can be run locally for debugging
+    True  # If True, this will do smaller runs that can be run locally for debugging
 )
 do_save = True
 
 # Run settings for calibration (dependent on debug)
-n_trials = [1000, 10][debug]  # How many trials to run for calibration
-n_workers = [8, 1][debug]  # How many cores to use
+n_trials = [8000, 10000][debug]  # How many trials to run for calibration
+n_workers = [8, 8][debug]  # How many cores to use
 storage = ["mysql://hpvsim_user@localhost/hpvsim_db", None][
     debug
 ]  # Storage for calibrations
@@ -71,7 +71,7 @@ def run_calib(
     location=None,
     n_trials=None,
     n_workers=None,
-    do_plot=True,
+    do_plot=False,
     do_save=True,
     filestem="",
 ):
@@ -250,7 +250,7 @@ if __name__ == "__main__":
 
     # Run calibration - usually on VMs
     if "run_calibration" in to_run:
-        filestem = "_nov13"
+        filestem = "_jul22"
         for location in locations:
             sim, calib = run_calib(
                 location=location,
@@ -270,9 +270,9 @@ if __name__ == "__main__":
             elif location in ["uganda", "drc"]:
                 filestem = "_nov06"
             else:
-                filestem = "_nov13"
+                filestem = "_jul22"
             calib = load_calib(
-                location=location, do_plot=False, save_pars=False, filestem=filestem
+                location=location, do_plot=True, save_pars=False, filestem=filestem
             )
             calibs.append(calib)
         plot_calibration_combined(calibs, locations)
