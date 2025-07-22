@@ -28,7 +28,7 @@ import utils as ut
 
 # CONFIGURATIONS TO BE SET BY USERS BEFORE RUNNING
 to_run = [
-    # 'run_calibration',  # Make sure this is uncommented if you want to _run_ the calibrations (usually on VMs)
+    #'run_calibration',  # Make sure this is uncommented if you want to _run_ the calibrations (usually on VMs)
     "plot_calibration",  # Make sure this is uncommented if you want to _plot_ the calibrations (usually locally)
 ]
 debug = (
@@ -37,8 +37,8 @@ debug = (
 do_save = True
 
 # Run settings for calibration (dependent on debug)
-n_trials = [8000, 10][debug]  # How many trials to run for calibration
-n_workers = [40, 1][debug]  # How many cores to use
+n_trials = [1000, 10][debug]  # How many trials to run for calibration
+n_workers = [8, 1][debug]  # How many cores to use
 storage = ["mysql://hpvsim_user@localhost/hpvsim_db", None][
     debug
 ]  # Storage for calibrations
@@ -71,7 +71,7 @@ def run_calib(
     location=None,
     n_trials=None,
     n_workers=None,
-    do_plot=False,
+    do_plot=True,
     do_save=True,
     filestem="",
 ):
@@ -139,7 +139,7 @@ def run_calib(
 # Load pre-run calibration
 ########################################################################
 def load_calib(location=None, do_plot=True, which_pars=0, save_pars=True, filestem=""):
-    fnlocation = location.replace(" ", "_")
+    fnlocation = location.replace(" ", "_").replace("'", "_")
     filename = f"{fnlocation}_calib{filestem}"
     calib = sc.load(f"results/{filename}.obj")
     if do_plot:
@@ -243,18 +243,9 @@ def plot_calibration_combined(calibs, locations, res_to_plot=50):
 if __name__ == "__main__":
 
     T = sc.timer()
-    # locations = ['india']
     locations = [
-        "india",  # 0
-        "indonesia",  # 1
-        "nigeria",  # 2
-        "tanzania",  # 3
-        "bangladesh",  # 4
-        "myanmar",  # 5
-        "uganda",  # 6
-        "ethiopia",  # 7
-        "drc",  # 8
-        # 'kenya'         # 9
+        'cote d\'ivoire',
+        'zambia',
     ]
 
     # Run calibration - usually on VMs

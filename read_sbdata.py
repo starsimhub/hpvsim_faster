@@ -48,47 +48,68 @@ def logn_percentiles_to_pars(x1, p1, x2, p2):
 def read_debut_data(dist_type='lognormal'):
     '''
     Read in dataframes taken from DHS and return them in a plot-friendly format,
-    optionally saving the distribution parameters
+    optionally saving the distribution parameters. 
+    Uses interpolation to find 25th and 50th percentiles from the data.
     '''
 
     df1 = pd.read_csv('data/afs_dist.csv')
-    df2 = pd.read_csv('data/afs_median.csv')
-
-    # Deal with median data
-    df2['y'] = 50
+    
+    # Create a median dataframe for backwards compatibility with plotting functions
+    df2 = pd.DataFrame()  # Will be populated with interpolated medians
 
     # Rearrange data into a plot-friendly format
     dff = {}
     rvs = {'Women': {}, 'Men': {}}
+    
+    # Store interpolated medians for plotting compatibility
+    median_data = {'Country': [], 'Women median': [], 'Men median': []}
 
     for sex in ['Women', 'Men']:
 
-        dfw = df1[['Country', f'{sex} 15', f'{sex} 18', f'{sex} 20', f'{sex} 22', f'{sex} 25', f'{sex} never']]
+        # Dynamically extract age columns from the CSV
+        sex_columns = [col for col in df1.columns if col.startswith(f'{sex} ')]
+        age_columns = ['Country'] + sex_columns
+        dfw = df1[age_columns]
         dfw = dfw.melt(id_vars='Country', value_name='Percentage', var_name='AgeStr')
 
-        # Add values for proportion ever having sex
+        # Add values for proportion ever having sex (only if 'never' column exists)
         countries = dfw.Country.unique()
         n_countries = len(countries)
-        vals = []
-        for country in countries:
-            val = 100-dfw.loc[(dfw['AgeStr'] == f'{sex} never') & (dfw['Country'] == country) , 'Percentage'].iloc[0]
-            vals.append(val)
+        has_never_column = any('never' in col for col in sex_columns)
+        
+        if has_never_column:
+            vals = []
+            for country in countries:
+                val = 100-dfw.loc[(dfw['AgeStr'] == f'{sex} never') & (dfw['Country'] == country) , 'Percentage'].iloc[0]
+                vals.append(val)
 
-        data_cat = {'Country': countries, 'AgeStr': [f'{sex} 60']*n_countries}
-        data_cat["Percentage"] = vals
-        df_cat = pd.DataFrame.from_dict(data_cat)
-        dfw = pd.concat([dfw,df_cat])
+            data_cat = {'Country': countries, 'AgeStr': [f'{sex} 60']*n_countries}
+            data_cat["Percentage"] = vals
+            df_cat = pd.DataFrame.from_dict(data_cat)
+            dfw = pd.concat([dfw,df_cat])
 
-        conditions = [
-            (dfw['AgeStr'] == f"{sex} 15"),
-            (dfw['AgeStr'] == f"{sex} 18"),
-            (dfw['AgeStr'] == f"{sex} 20"),
-            (dfw['AgeStr'] == f"{sex} 22"),
-            (dfw['AgeStr'] == f"{sex} 25"),
-            (dfw['AgeStr'] == f"{sex} 60"),
-        ]
-        values = [15, 18, 20, 22, 25, 60]
-        dfw['Age'] = np.select(conditions, values)
+        # Dynamically extract age values from column names and create conditions
+        age_values = []
+        conditions = []
+        for col in sex_columns:
+            if 'never' in col:
+                continue  # Skip 'never' column for age mapping
+            # Extract numeric age from column name (e.g., "Women 15" -> 15)
+            age_str = col.split(' ', 1)[1]  # Get everything after first space
+            try:
+                age = int(age_str)
+                age_values.append(age)
+                conditions.append((dfw['AgeStr'] == col))
+            except ValueError:
+                # Handle non-numeric age strings like "never" - skip them
+                pass
+        
+        # Add the artificial "60" age for "ever had sex" proportion (only if 'never' column existed)
+        if has_never_column:
+            age_values.append(60)
+            conditions.append((dfw['AgeStr'] == f"{sex} 60"))
+        
+        dfw['Age'] = np.select(conditions, age_values)
 
         dff[sex] = dfw
 
@@ -98,13 +119,82 @@ def read_debut_data(dist_type='lognormal'):
         res["par2"] = []
         res["dist"] = []
         for pn,country in enumerate(countries):
-            dfplot = dfw.loc[(dfw["Country"] == country) & (dfw["AgeStr"] != f'{sex} never') & (dfw["AgeStr"] != f'{sex} 60')]
-            x1 = 15
-            p1 = dfplot.loc[dfplot["Age"] == x1, 'Percentage'].iloc[0] / 100
-            x2 = df2.loc[df2["Country"]==country,f"{sex} median"].iloc[0]
-            p2 = .50
-            # x2 = 25
-            # p2 = dfplot.loc[dfplot["Age"] == x2, 'Percentage'].iloc[0] / 100
+            # Filter out 'never' and artificial '60' columns if they exist
+            exclude_conditions = (dfw["Country"] == country)
+            if has_never_column:
+                exclude_conditions = exclude_conditions & (dfw["AgeStr"] != f'{sex} never') & (dfw["AgeStr"] != f'{sex} 60')
+            else:
+                exclude_conditions = exclude_conditions & True  # No additional filtering needed
+            dfplot = dfw.loc[exclude_conditions]
+            
+            if len(dfplot) == 0:
+                continue  # Skip if no data available
+                
+            # Get ages and percentages for interpolation
+            if has_never_column:
+                available_ages = sorted([age for age in age_values if age != 60])  # Exclude artificial 60
+            else:
+                available_ages = sorted(age_values)  # Use all available ages
+            if not available_ages:
+                continue
+            
+            # Create arrays for interpolation
+            ages = []
+            percentages = []
+            for age in available_ages:
+                pct_data = dfplot.loc[dfplot["Age"] == age, 'Percentage']
+                if len(pct_data) > 0:
+                    ages.append(age)
+                    percentages.append(pct_data.iloc[0])
+            
+            if len(ages) < 2:
+                continue  # Need at least 2 points for interpolation
+                
+            ages = np.array(ages)
+            percentages = np.array(percentages)
+            
+            # Interpolate to find 25th percentile age
+            if percentages.max() >= 25:
+                x1 = np.interp(25, percentages, ages)
+                p1 = 0.25
+            else:
+                # If we don't reach 25%, use the highest percentage available
+                max_idx = np.argmax(percentages)
+                x1 = ages[max_idx]
+                p1 = percentages[max_idx] / 100
+                
+            # Interpolate to find 50th percentile (median) age
+            if percentages.max() >= 50:
+                x2 = np.interp(50, percentages, ages)
+                p2 = 0.50
+            else:
+                # If we don't reach 50%, use a higher percentile if available
+                if percentages.max() >= 40:
+                    x2 = np.interp(percentages.max(), percentages, ages)
+                    p2 = percentages.max() / 100
+                else:
+                    continue  # Skip if insufficient data range
+                    
+            # Store interpolated median for plotting compatibility
+            if sex == 'Women':
+                if country not in [c for c in median_data['Country']]:
+                    median_data['Country'].append(country)
+                    median_data['Women median'].append(x2)
+                    median_data['Men median'].append(None)  # Will be filled when processing men
+                else:
+                    # Update the existing entry
+                    idx = median_data['Country'].index(country)
+                    median_data['Women median'][idx] = x2
+            else:  # Men
+                if country not in [c for c in median_data['Country']]:
+                    median_data['Country'].append(country)
+                    median_data['Women median'].append(None)
+                    median_data['Men median'].append(x2)
+                else:
+                    # Update the existing entry
+                    idx = median_data['Country'].index(country)
+                    median_data['Men median'][idx] = x2
+            
             res["location"].append(country)
             res["dist"].append(dist_type)
 
@@ -122,6 +212,10 @@ def read_debut_data(dist_type='lognormal'):
             rvs[sex][country] = rv
 
         pd.DataFrame.from_dict(res).to_csv(f'data/sb_pars_{sex.lower()}_{dist_type}.csv')
+
+    # Create df2 for backwards compatibility with plotting functions
+    df2 = pd.DataFrame(median_data)
+    df2['y'] = 50  # For plotting compatibility
 
     return countries, dff, df2, rvs
 
