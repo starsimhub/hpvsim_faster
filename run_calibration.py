@@ -28,8 +28,8 @@ import utils as ut
 
 # CONFIGURATIONS TO BE SET BY USERS BEFORE RUNNING
 to_run = [
-    'run_calibration',  # Make sure this is uncommented if you want to _run_ the calibrations (usually on VMs)
-    #"plot_calibration",  # Make sure this is uncommented if you want to _plot_ the calibrations (usually locally)
+    #'run_calibration',  # Make sure this is uncommented if you want to _run_ the calibrations (usually on VMs)
+    "plot_calibration",  # Make sure this is uncommented if you want to _plot_ the calibrations (usually locally)
 ]
 debug = (
     True  # If True, this will do smaller runs that can be run locally for debugging
@@ -49,9 +49,9 @@ storage = ["mysql://hpvsim_user@localhost/hpvsim_db", None][
 ########################################################################
 def make_priors():
     default = dict(
-        rel_beta=[0.9, 0.8, 1.2, 0.05],
-        cancer_fn=dict(ld50=[20, 15, 30, 0.5]),
-        dur_cin=dict(par1=[7, 3, 12, 0.1], par2=[15, 10, 25, 0.5]),
+        rel_beta=[0.9, 0.7, 1.3, 0.05],
+        cancer_fn=dict(ld50=[20, 10, 35, 0.5]),
+        dur_cin=dict(par1=[7, 2, 15, 0.1], par2=[15, 5, 30, 0.5]),
     )
 
     genotype_pars = dict(
@@ -59,8 +59,8 @@ def make_priors():
         hi5=sc.dcp(default),
         ohr=sc.dcp(default),
         hpv16=dict(
-            cancer_fn=dict(ld50=[20, 15, 30, 0.5]),
-            dur_cin=dict(par1=[7, 3, 12, 0.1], par2=[15, 10, 25, 0.5]),
+            cancer_fn=dict(ld50=[20, 10, 35, 0.5]),
+            dur_cin=dict(par1=[7, 2, 14, 0.1], par2=[15, 5, 30, 0.5]),
         ),
     )
 
@@ -81,11 +81,11 @@ def run_calib(
 
     # Define the calibration parameters
     calib_pars = dict(
-        beta=[0.06, 0.02, 0.5, 0.02],
-        own_imm_hr=[0.5, 0.25, 1, 0.05],
-        age_risk=dict(risk=[1, 1, 4, 0.1], age=[30, 30, 45, 1]),
-        sev_dist=dict(par1=[1, 1, 2, 0.1]),
-        cell_imm_init=dict(par1=[0.5, 0.2, 0.8, 0.05]),
+        beta=[0.06, 0.01, 0.49, 0.02],
+        own_imm_hr=[0.5, 0.1, 1, 0.05],
+        age_risk=dict(risk=[1, 0.5, 4, 0.1], age=[30, 20, 50, 1]),
+        sev_dist=dict(par1=[1, 0.5, 2, 0.1]),
+        cell_imm_init=dict(par1=[0.5, 0.1, 0.9, 0.05]),
     )
 
     if location == "nigeria":
@@ -100,10 +100,10 @@ def run_calib(
         )
     else:
         sexual_behavior_pars = dict(
-            m_cross_layer=[0.3, 0.1, 0.7, 0.05],
-            m_partners=dict(c=dict(par1=[0.2, 0.1, 0.6, 0.02])),
-            f_cross_layer=[0.1, 0.05, 0.5, 0.05],
-            f_partners=dict(c=dict(par1=[0.2, 0.1, 0.6, 0.02])),
+            m_cross_layer=[0.3, 0.05, 0.9, 0.05],
+            m_partners=dict(c=dict(par1=[0.2, 0.05, 0.89, 0.02])),
+            f_cross_layer=[0.1, 0.05, 0.9, 0.05],
+            f_partners=dict(c=dict(par1=[0.2, 0.05, 0.89, 0.02])),
         )
     calib_pars = sc.mergedicts(calib_pars, sexual_behavior_pars)
 
